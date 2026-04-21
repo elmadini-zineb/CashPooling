@@ -129,6 +129,32 @@ export function AmendmentTracking({ amendment, contract }: AmendmentTrackingProp
     }
   }
 
+  // Map amendment status to 4-step lifecycle
+  const getProgressStep = (): number => {
+    switch (amendment.status) {
+      case "generated":
+        return 1
+      case "pending_signature":
+        return 2
+      case "signed":
+        return 3
+      case "active":
+        return 4
+      case "rejected":
+        return 0 // Special case
+      default:
+        return 0
+    }
+  }
+
+  const progressStep = getProgressStep()
+  const steps = [
+    { label: "Généré", status: "generated" },
+    { label: "En attente", status: "pending_signature" },
+    { label: "Confirmée", status: "signed" },
+    { label: "Actif", status: "active" },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Navigation */}
@@ -159,94 +185,138 @@ export function AmendmentTracking({ amendment, contract }: AmendmentTrackingProp
         </CardHeader>
       </Card>
 
-      {/* Status Timeline */}
+      {/* 4-Step Progress Bar */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Statut de l'avenant</CardTitle>
+          <CardTitle className="text-base">Progression de l'avenant</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Draft Status */}
-            <div className="flex gap-4">
-              <div className="flex flex-col items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${amendment.status === "draft" || amendment.createdAt ? "bg-blue-100 border-blue-300" : "bg-slate-100 border-slate-300"}`}>
-                  <Clock className="h-4 w-4 text-blue-600" />
-                </div>
-                <div className="h-12 w-1 bg-slate-200 mt-2" />
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900">Généré</p>
-                <p className="text-sm text-slate-600">
-                  {amendment.createdAt.toLocaleDateString("fr-FR")} à{" "}
-                  {amendment.createdAt.toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
+            {amendment.status !== "rejected" ? (
+              <>
+                {/* Progress Bar */}
+                <div className="flex items-center justify-between mb-8">
+                  {steps.map((step, index) => {
+                    const isCompleted = progressStep > index + 1
+                    const isActive = progressStep === index + 1
+                    return (
+                      <div key={step.status} className="flex flex-col items-center flex-1">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
+                            isCompleted
+                              ? "bg-green-500 text-white"
+                              : isActive
+                                ? "bg-blue-500 text-white ring-2 ring-blue-200"
+                                : "bg-slate-200 text-slate-600"
+                          }`}
+                        >
+                          {isCompleted ? "✓" : index + 1}
+                        </div>
+                        <p className={`text-xs font-medium mt-2 text-center ${isActive ? "text-blue-600" : "text-slate-600"}`}>
+                          {step.label}
+                        </p>
+                        {index < steps.length - 1 && (
+                          <div
+                            className={`absolute h-1 w-24 mt-5 ${
+                              isCompleted ? "bg-green-500" : "bg-slate-300"
+                            }`}
+                            style={{ marginLeft: "56px" }}
+                          />
+                        )}
+                      </div>
+                    )
                   })}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">par {amendment.createdBy}</p>
-              </div>
-            </div>
+                </div>
 
-            {/* Signature Status */}
-            <div className="flex gap-4">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                    amendment.status === "signed" || amendment.status === "active" || amendment.signedAt
-                      ? "bg-emerald-100 border-emerald-300"
-                      : amendment.status === "rejected"
-                        ? "bg-red-100 border-red-300"
-                        : "bg-slate-100 border-slate-300"
-                  }`}
-                >
-                  {amendment.status === "rejected" ? (
-                    <XCircle className="h-4 w-4 text-red-600" />
-                  ) : amendment.signedAt ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                  ) : (
-                    <Clock className="h-4 w-4 text-slate-400" />
+                {/* Progress Timeline Details */}
+                <div className="space-y-4 border-t pt-4">
+                  {/* Step 1: Generated */}
+                  <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 bg-green-100 border-green-300">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900">Généré</p>
+                      <p className="text-sm text-slate-600">
+                        {amendment.createdAt.toLocaleDateString("fr-FR")} à{" "}
+                        {amendment.createdAt.toLocaleTimeString("fr-FR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">par {amendment.createdBy}</p>
+                    </div>
+                  </div>
+
+                  {/* Step 2: Pending Signature */}
+                  {progressStep >= 2 && (
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${progressStep >= 2 ? "bg-green-100 border-green-300" : "bg-slate-100 border-slate-300"}`}>
+                          {progressStep >= 2 ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Clock className="h-4 w-4 text-slate-400" />
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">En attente de signature</p>
+                        <p className="text-sm text-slate-600">Le client doit signer l'avenant</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 3: Signed */}
+                  {progressStep >= 3 && amendment.signedAt && (
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 bg-green-100 border-green-300">
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">Confirmée par signature</p>
+                        <p className="text-sm text-slate-600">
+                          {amendment.signedAt.toLocaleDateString("fr-FR")} à{" "}
+                          {amendment.signedAt.toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">par {amendment.signedBy}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 4: Active */}
+                  {progressStep >= 4 && (
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 bg-green-100 border-green-300">
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">Actif</p>
+                        <p className="text-sm text-slate-600">
+                          À partir du {amendment.effectiveDate.toLocaleDateString("fr-FR")}
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
-                {amendment.status !== "rejected" && <div className="h-12 w-1 bg-slate-200 mt-2" />}
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900">
-                  {amendment.status === "rejected" ? "Rejeté" : "Signature"}
-                </p>
-                {amendment.signedAt ? (
-                  <>
-                    <p className="text-sm text-slate-600">
-                      {amendment.signedAt.toLocaleDateString("fr-FR")} à{" "}
-                      {amendment.signedAt.toLocaleTimeString("fr-FR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">par {amendment.signedBy}</p>
-                  </>
-                ) : amendment.status === "rejected" ? (
-                  <>
-                    <p className="text-sm text-red-600">{amendment.rejectionReason}</p>
-                  </>
-                ) : (
-                  <p className="text-sm text-slate-600">En attente de signature</p>
-                )}
-              </div>
-            </div>
-
-            {/* Activation Status */}
-            {amendment.status === "active" && (
-              <div className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center border-2 bg-blue-100 border-blue-300">
-                    <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  </div>
-                </div>
+              </>
+            ) : (
+              /* Rejection Case */
+              <div className="flex gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <XCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
                 <div>
-                  <p className="font-semibold text-slate-900">Activé</p>
-                  <p className="text-sm text-slate-600">
-                    À partir du {amendment.effectiveDate.toLocaleDateString("fr-FR")}
-                  </p>
+                  <p className="font-semibold text-red-900">Avenant rejeté</p>
+                  <p className="text-sm text-red-700 mt-1">{amendment.rejectionReason}</p>
+                  <p className="text-xs text-red-600 mt-2">La convention revient au statut Actif</p>
                 </div>
               </div>
             )}

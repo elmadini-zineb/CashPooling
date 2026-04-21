@@ -321,8 +321,38 @@ export interface Amendment {
   reason: string
   effectiveDate: Date
   status: AmendmentStatus
+  
+  // Sections being modified
+  modifyPricing: boolean
+  modifyLeveling: boolean
+  modifyDebitCoverage: boolean
+  modifySecondaryAccounts: boolean
+  
+  // Pricing modifications
   previousPricingConfig: PricingConfig
   newPricingConfig: PricingConfig
+  
+  // Leveling modifications (if applicable)
+  levelingChanges?: {
+    casablanca?: { oldMode: string; newMode: string; params?: any }
+    rabat?: { oldMode: string; newMode: string; params?: any }
+    tanger?: { oldMode: string; newMode: string; params?: any }
+  }
+  
+  // Debit coverage modifications (if applicable)
+  debitCoverageChanges?: {
+    oldMode: CoverageMode
+    newMode: CoverageMode
+    oldPriorities?: any
+    newPriorities?: any
+  }
+  
+  // Secondary accounts modifications (if applicable)
+  accountsChanges?: {
+    accountsToAdd: Account[]
+    accountsToRemove: string[] // IDs
+  }
+  
   pdfUrl?: string
   createdBy: string // Manager email
   createdAt: Date
