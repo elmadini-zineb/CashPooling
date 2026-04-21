@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180">
+  <!-- Orange "A" letter -->
+  <g fill="#FF6B35">
+    <!-- Left side of A -->
+    <polygon points="50,160 75,40 85,40 110,160 95,160 90,140 65,140 60,160"/>
+    <!-- Right side of A -->
+    <polygon points="110,160 135,40 145,40 170,160 155,160 150,140 125,140 120,160"/>
+    <!-- Horizontal bar -->
+    <rect x="65" y="105" width="70" height="12" fill="#FF6B35"/>
+  </g>
+  
+  <!-- Gray curved element (swoosh) -->
+  <path d="M 140 50 Q 100 80 60 140" stroke="#9CA3AF" stroke-width="16" fill="none" stroke-linecap="round"/>
+</svg>

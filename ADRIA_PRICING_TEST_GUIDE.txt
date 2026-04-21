@@ -1,0 +1,172 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║         GUIDE DE TEST - TARIFICATION ADRIA v2.0 REFACTORISÉE                    ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+📍 ACCÈS
+─────────────────────────────────────────────────────────────────────────────────
+URL: http://localhost:3000/admin
+Email: admin@banque.fr
+Password: 123456
+Section: Cliquer sur l'onglet "Tarification"
+
+🧪 SCÉNARIOS DE TEST
+─────────────────────────────────────────────────────────────────────────────────
+
+TEST 1: ZBA AVEC TARIFICATION FIXE
+─────────────────────────────────────────────────────────────────────────────────
+Étapes:
+1. Mode de nivellement: Sélectionner ZBA
+2. Type de tarification: Sélectionner Fixe
+3. Montant: 500
+4. Devise: MAD
+5. Fréquence: Mensuelle
+6. Cliquer "Sauvegarder la Configuration"
+
+Résultat attendu:
+✓ Champ "Nombre de sweeps" n'apparaît PAS (car type = Fixe)
+✓ Configuration résumée affiche "500 MAD par période mensuelle"
+✓ Message vert "Configuration sauvegardée avec succès"
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEST 2: TBA AVEC TARIFICATION VARIABLE
+─────────────────────────────────────────────────────────────────────────────────
+Étapes:
+1. Mode de nivellement: Sélectionner TBA
+2. Type de tarification: Sélectionner Variable
+3. Taux: 0.5
+4. Frais par opération: 10
+5. Frais minimum: 50
+6. Frais maximum: 5000
+7. Montant cible: 100000
+8. Écart autorisé: 10000
+9. Cliquer "Sauvegarder la Configuration"
+
+Résultat attendu:
+✓ Champs "Montant cible" et "Écart autorisé" APPARAISSENT (TBA)
+✓ Champ "Nombre de sweeps" n'apparaît PAS (TBA, pas ZBA)
+✓ Résumé affiche taux 0.5% + 10 MAD/opération
+✓ Message vert de confirmation
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEST 3: FBA AVEC TARIFICATION HYBRIDE
+─────────────────────────────────────────────────────────────────────────────────
+Étapes:
+1. Mode de nivellement: Sélectionner FBA
+2. Type de tarification: Sélectionner Hybride
+3. PARTIE FIXE:
+   - Montant fixe: 250
+   - Fréquence: Trimestrielle
+4. PARTIE VARIABLE:
+   - Taux: 0.25
+   - Frais minimum: 25
+   - Frais maximum: 3000
+5. Champ "Montant total à équilibrer": 500000
+6. Cliquer "Sauvegarder la Configuration"
+
+Résultat attendu:
+✓ Deux sections visuellement séparées (Fixe vs Variable)
+✓ Champ "Montant total à équilibrer" APPARAÎT (FBA)
+✓ Résumé affiche: "250 MAD fixe + 0.25% variable"
+✓ Tous les autres champs spécifiques masqués
+✓ Message vert de confirmation
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEST 4: VALIDATION DES TOOLTIPS
+─────────────────────────────────────────────────────────────────────────────────
+Actions:
+1. Passer le curseur sur les boutons ZBA/TBA/FBA
+2. Passer le curseur sur les icônes d'info dans "Type de Tarification"
+
+Résultat attendu:
+✓ Tooltip ZBA: "Compte à solde zéro - Les fonds excédentaires..."
+✓ Tooltip TBA: "Compte avec solde cible - Un montant cible..."
+✓ Tooltip FBA: "Compte avec solde complet - Tous les fonds..."
+✓ Tooltips Fixe/Variable/Hybride: Descriptions courtes
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEST 5: CHANGEMENTS DYNAMIQUES
+─────────────────────────────────────────────────────────────────────────────────
+Procédure:
+1. Configurer ZBA + Fixe (voir résumé)
+2. Changer Mode → TBA (résumé doit refléter)
+3. Changer Type → Variable (nouveaux champs apparaissent)
+4. Changer Mode → FBA (champs TBA disparaissent, FBA apparaissent)
+5. Observer le résumé à chaque changement
+
+Résultat attendu:
+✓ Interface se met à jour SANS recharger
+✓ Champs pertinents affichés/masqués au bon moment
+✓ Résumé toujours à jour
+✓ Aucun bug d'affichage
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEST 6: DEVISES DIFFÉRENTES
+─────────────────────────────────────────────────────────────────────────────────
+Étapes:
+1. Mode: ZBA
+2. Type: Fixe
+3. Montant: 1000
+4. Devise: EUR (au lieu de MAD)
+5. Fréquence: Annuelle
+6. Sauvegarder
+
+Résultat attendu:
+✓ Sélection EUR fonctionnelle
+✓ Résumé affiche "1000 EUR" (pas MAD)
+✓ Sauvegarde réussie avec confirmation
+
+─────────────────────────────────────────────────────────────────────────────────
+
+TEST 7: ISOLATION ADMIN (IMPORTANT)
+─────────────────────────────────────────────────────────────────────────────────
+Vérifications:
+1. Aucun bouton "Sélection de compte"
+2. Aucun bouton "Structuration"
+3. Aucun bouton "Validation"
+4. Aucun bouton "Génération de contrat"
+5. Seulement "Tarification" et "Paramètres Banque"
+
+Résultat attendu:
+✓ Interface Admin 100% PROPRE
+✓ Zéro trace du processus Cash Pooling
+✓ Admin = Tarification + Paramètres (uniquement)
+
+─────────────────────────────────────────────────────────────────────────────────
+
+🎯 CHECKLIST DE VÉRIFICATION FINALE
+─────────────────────────────────────────────────────────────────────────────────
+□ Interface affiche correctement en blanc (pas noir)
+□ Les 3 modes ZBA/TBA/FBA sont sélectionnables
+□ Les 3 types Fixe/Variable/Hybride sont sélectionnables
+□ Champs dynamiques apparaissent/disparaissent correctement
+□ Tooltips s'affichent au survol
+□ Messages de sauvegarde visibles
+□ Résumé se met à jour en temps réel
+□ Responsive sur mobile/tablet
+□ Aucun console error dans DevTools
+□ Admin reste isolé (pas de Cash Pooling)
+
+═════════════════════════════════════════════════════════════════════════════════
+
+📊 RÉSULTATS DES TESTS
+─────────────────────────────────────────────────────────────────────────────────
+
+Date: _______________
+Testeur: _____________
+
+Test 1 (ZBA Fixe): ☐ Réussi  ☐ Échoué  Notes: ___________________________
+Test 2 (TBA Variable): ☐ Réussi  ☐ Échoué  Notes: ________________________
+Test 3 (FBA Hybride): ☐ Réussi  ☐ Échoué  Notes: ________________________
+Test 4 (Tooltips): ☐ Réussi  ☐ Échoué  Notes: ____________________________
+Test 5 (Dynamique): ☐ Réussi  ☐ Échoué  Notes: __________________________
+Test 6 (Devises): ☐ Réussi  ☐ Échoué  Notes: _____________________________
+Test 7 (Isolation): ☐ Réussi  ☐ Échoué  Notes: __________________________
+
+Status Global: ☐ PRODUCTION READY  ☐ NÉCESSITE CORRECTIONS
+
+═════════════════════════════════════════════════════════════════════════════════

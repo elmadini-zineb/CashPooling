@@ -1,0 +1,121 @@
+================================================================================
+REFACTORISATION - RÉSULTATS DE RECHERCHE - SÉLECTION DU COMPTE CENTRALISATEUR
+================================================================================
+
+RÉSUMÉ EXÉCUTIF (30 secondes)
+────────────────────────────
+
+AVANT:
+  Numéro de compte (en évidence)
+  └─ Identifiant client
+  └─ Intitulé client
+
+APRÈS:
+  Référence client (en ÉVIDENCE) ← Changement clé
+  └─ Raison sociale
+  └─ Tableau des comptes
+      ├─ Numéro de compte
+      ├─ Type
+      ├─ Solde
+      ├─ Statut
+      └─ Devise
+
+RÉSULTAT: Les résultats sont maintenant organisés par CLIENT, pas par COMPTE.
+
+================================================================================
+FICHIERS IMPACTÉS
+================================================================================
+
+CRÉÉS:
+  ✓ components/account-search-results.tsx (282 lignes)
+    - Composant pour affichage hiérarchique groupé par client
+    - Tableau des comptes avec radio button
+    - Collapse/expand par client
+
+MODIFIÉS:
+  ✓ components/steps/step-selection.tsx
+    - Import du nouveau composant
+    - Remplacement de la section résultats
+    - Suppression de 28 lignes de code non utilisé
+
+================================================================================
+FEATURES
+================================================================================
+
+✓ Résultats groupés par référence client
+✓ Hiérarchie visuellement claire: Client → Comptes
+✓ Tableau des comptes avec infos clés (Type, Solde, Statut, Devise)
+✓ Radio button pour sélection simple
+✓ Collapse/Expand par client
+✓ Compteur clients/comptes trouvés
+✓ Support multi-recherche (colonnes côte à côte)
+✓ Responsive design (mobile/tablet/desktop)
+✓ Statuts visuels (Actif=vert, Inactif=jaune, Clôturé=rouge)
+✓ Comptes inactifs = désactivés
+
+================================================================================
+INCHANGÉ
+================================================================================
+
+✓ Critères de recherche (numéro de compte, identifiant, intitulé client)
+✓ Fonctionnalité multi-recherche
+✓ Logique de sélection
+✓ Validation et bouton "Continuer"
+✓ Comptes liés/parentaux (non affichés dans tableau, mais conservés)
+
+================================================================================
+INTÉGRATION
+================================================================================
+
+Aucune configuration nécessaire. Le nouveau composant est automatiquement utilisé.
+
+1. La recherche fonctionne exactement comme avant
+2. Les résultats sont affichés de manière regroupée
+3. La sélection fonctionne avec les radio buttons
+
+================================================================================
+EXEMPLE D'AFFICHAGE
+================================================================================
+
+Étape 1: Sélection du compte centralisateur
+
+Rechercher un compte
+[Numéro, Identifiant, Intitulé client...] [Rechercher]
+
+─────────────────────────────────────────────────────────────────
+Résultats de recherche
+
+2 clients trouvés avec 5 comptes
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ▼ Référence: CLIENT-001                            [5 comptes]  │
+│   ENTERPRISE FRANCE SARL                                        │
+│ ┌───┬────────────┬──────────┬──────────┬────────┬───────────┐  │
+│ │Sél│  N° Compte │   Type   │  Solde   │ Statut │  Devise   │  │
+│ ├───┼────────────┼──────────┼──────────┼────────┼───────────┤  │
+│ │ ◯ │ ACC-001    │ Principal│ 150000.00│ Actif  │  EUR      │  │
+│ │ ◯ │ ACC-002    │ Secondaire│ 50000.00│ Actif  │  EUR      │  │
+│ │ ◯ │ ACC-003    │ Operating│ 75000.00│ Actif  │  EUR      │  │
+│ └───┴────────────┴──────────┴──────────┴────────┴───────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│ ▼ Référence: CLIENT-002                            [2 comptes]  │
+│   TECH STARTUP MAROC SARL                                       │
+│ ┌───┬────────────┬──────────┬──────────┬────────┬───────────┐  │
+│ │Sél│  N° Compte │   Type   │  Solde   │ Statut │  Devise   │  │
+│ ├───┼────────────┼──────────┼──────────┼────────┼───────────┤  │
+│ │ ◯ │ ACC-004    │ Principal│ 100000.00│ Actif  │  EUR      │  │
+│ │ ◯ │ ACC-005    │ Secondaire│ 25000.00│ Inactif│ EUR       │  │
+│ └───┴────────────┴──────────┴──────────┴────────┴───────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+
+[Continuer vers la structuration]
+
+================================================================================
+QUESTIONS?
+================================================================================
+
+Consultez: SEARCH_RESULTS_REFACTORING.md pour la documentation complète
+
+================================================================================

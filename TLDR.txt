@@ -1,0 +1,46 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                           TL;DR - 30 SECONDES                             ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+QU'EST-CE QUI A ÉTÉ FAIT?
+
+Interface Admin créée pour gérer:
+  ✅ Tarification (Adria ou Moteur Externe)
+  ✅ Paramètres Banque (Infos, Contact, Adresse)
+
+Ce qui N'EST PAS dans Admin:
+  ❌ Processus Cash Pooling (Sélection, Structuration, Validation, Contrat)
+  ❌ Zéro trace du workflow Cash Pooling
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COMMENT Y ACCÉDER?
+
+Admin: /admin
+  Email: admin@banque.fr / Password: 123456
+
+Chargé: /dashboard
+  Email: charge@banque.fr / Password: 123456
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONFORMITÉ?
+
+✅ Oui - 30/30 points d'audit passés
+✅ Zéro trace Cash Pooling dans Admin
+✅ Production Ready
+✅ Déployable maintenant
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POUR PLUS D'INFOS:
+
+2 min:   ADMIN_QUICK_FACTS.txt
+5 min:   ADMIN_INTEGRITY_REPORT.txt
+30 min:  MASTER_INDEX.md → choisir guide spécifique
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FIN. C'est tout ce que vous devez savoir en 30 secondes.

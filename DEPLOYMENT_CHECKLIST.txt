@@ -1,0 +1,305 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                    DEPLOYMENT CHECKLIST                                    ║
+║              Avant de déployer en production                               ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRE-DEPLOYMENT (Phase 1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VÉRIFICATION DE CONFORMITÉ
+
+  [ ] Lire ADMIN_INTEGRITY_REPORT.txt
+  [ ] Lire FINAL_VERIFICATION_30_POINTS.md
+  [ ] Confirmer 30/30 points ✅
+  [ ] Vérifier zéro trace Cash Pooling dans Admin
+  [ ] Confirmer isolation complète
+
+VÉRIFICATION SÉCURITÉ
+
+  [ ] Lire SECURITY_AUDIT_REPORT.md
+  [ ] Confirmer authentication en place
+  [ ] Confirmer role checking actif
+  [ ] Confirmer redirection non-Admin
+  [ ] Vérifier données séparées par rôle
+
+VÉRIFICATION DE CODE
+
+  [ ] Examiner /app/admin/page.tsx
+  [ ] Examiner /components/admin/pricing-management.tsx
+  [ ] Examiner /components/admin/bank-settings-form.tsx
+  [ ] Vérifier zéro import Cash Pooling
+  [ ] Vérifier zéro mélange de code
+
+VÉRIFICATION D'ARCHITECTURE
+
+  [ ] Routes distinctes /admin vs /dashboard
+  [ ] Types séparés pour Admin
+  [ ] Mock data séparée
+  [ ] RBAC actif et testé
+  [ ] Middleware/Guards en place
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FUNCTIONAL TESTING (Phase 2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ACCÈS ET AUTHENTIFICATION
+
+  [ ] Login avec admin@banque.fr → accès /admin
+  [ ] Login avec charge@banque.fr → redirect /dashboard
+  [ ] Login avec client@banque.fr → redirect /dashboard
+  [ ] Logout clears session
+  [ ] Back button from /admin → /login
+  [ ] Direct /admin access sans auth → /login redirect
+
+FONCTIONNALITÉS TARIFICATION
+
+  [ ] Tab "Tarification" visible
+  [ ] Moteur Adria sélectionnable
+  [ ] Moteur Externe sélectionnable
+  [ ] Création de règles
+  [ ] Édition de règles
+  [ ] Suppression de règles
+  [ ] Activation/Désactivation
+  [ ] Tableau des règles affiche correctement
+  [ ] Validation de formulaire
+
+FONCTIONNALITÉS PARAMÈTRES BANQUE
+
+  [ ] Tab "Paramètres Banque" visible
+  [ ] Champs préchargés avec données mock
+  [ ] Modification de champs
+  [ ] Sauvegarde fonctionne
+  [ ] Toast de succès apparaît
+  [ ] Tous les champs présents (nom, code, SWIFT, contact, adresse)
+
+ISOLEMENT CASH POOLING
+
+  [ ] Aucun lien vers Cash Pooling dans Admin
+  [ ] Aucune étape visible dans Admin
+  [ ] UnifiedSubscriptionFlow non importé
+  [ ] StepSelection non importé
+  [ ] StepStructure non importé
+  [ ] StepValidation non importé
+  [ ] StepContract non importé
+  [ ] HierarchyBuilder non importé
+  [ ] HierarchyVisualizer non importé
+  [ ] PoolingSimulator non importé
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECURITY TESTING (Phase 3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AUTHENTIFICATION
+
+  [ ] Non-logged users → /login
+  [ ] Invalid credentials → error message
+  [ ] Valid credentials → correct dashboard
+  [ ] Session persists after refresh
+  [ ] Logout removes session
+  [ ] Session storage contains role
+
+AUTHORIZATION
+
+  [ ] Non-Admin cannot access /admin (URL)
+  [ ] Non-Admin redirects to /dashboard
+  [ ] Admin role check passes
+  [ ] Tarification visible only to Admin
+  [ ] Paramètres visible only to Admin
+  [ ] Role verified on every page load
+
+DATA SECURITY
+
+  [ ] Mock data does not expose real data
+  [ ] User data properly separated
+  [ ] Cash Pooling data not accessible in Admin
+  [ ] Admin data not exposed to Chargé
+  [ ] Sensitive data properly handled
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PERFORMANCE & UX (Phase 4)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PERFORMANCE
+
+  [ ] Page loads in < 2 seconds
+  [ ] Tab switching is smooth
+  [ ] Form submission is responsive
+  [ ] No console errors
+  [ ] No network errors
+  [ ] Images load correctly
+
+RESPONSIVE DESIGN
+
+  [ ] Desktop view looks good
+  [ ] Tablet view responsive
+  [ ] Mobile view functional
+  [ ] All buttons clickable
+  [ ] Forms readable on mobile
+
+USER EXPERIENCE
+
+  [ ] Navigation is intuitive
+  [ ] Labels are clear
+  [ ] Buttons have clear purpose
+  [ ] Error messages helpful
+  [ ] Success messages appear
+  [ ] Loading states visible (if any)
+
+ACCESSIBILITY
+
+  [ ] Tab navigation works
+  [ ] Focus indicators visible
+  [ ] Alt text on images
+  [ ] Color contrast sufficient
+  [ ] Form labels associated
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DOCUMENTATION & KNOWLEDGE (Phase 5)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOCUMENTATION REVIEW
+
+  [ ] Read ADMIN_INTEGRITY_REPORT.txt
+  [ ] Read FINAL_VERIFICATION_30_POINTS.md
+  [ ] Read ADMIN_SCOPE_AND_BOUNDARIES.md
+  [ ] Understand role-based access
+  [ ] Know what's in Admin vs Dashboard
+  [ ] Know test account credentials
+
+TEAM COMMUNICATION
+
+  [ ] Brief Admin users on new interface
+  [ ] Provide access to documentation
+  [ ] Explain tarification management
+  [ ] Explain bank settings management
+  [ ] Provide test accounts
+  [ ] Schedule training if needed
+
+KNOWLEDGE TRANSFER
+
+  [ ] Document any customizations made
+  [ ] Create local notes if needed
+  [ ] Brief on-call team
+  [ ] Backup documentation stored
+  [ ] Runbook updated if applicable
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL APPROVAL (Phase 6)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MANAGEMENT SIGN-OFF
+
+  [ ] Manager reviewed conformity
+  [ ] Manager approved spec compliance
+  [ ] Manager signed off on deployment
+  [ ] Business owner notified
+
+TECHNICAL LEAD APPROVAL
+
+  [ ] Tech lead reviewed code
+  [ ] Tech lead confirmed security
+  [ ] Tech lead approved architecture
+  [ ] Tech lead signed off on deployment
+
+QA/TEST COMPLETION
+
+  [ ] All tests passed
+  [ ] No critical issues found
+  [ ] Documentation reviewed
+  [ ] QA signed off
+
+DEPLOYMENT READY
+
+  [ ] All checklist items completed
+  [ ] All approvals obtained
+  [ ] Documentation in place
+  [ ] Team briefed
+  [ ] Ready to go LIVE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEPLOYMENT (Phase 7)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PRE-DEPLOYMENT
+
+  [ ] Backup current system
+  [ ] Verify rollback plan
+  [ ] Notify stakeholders
+  [ ] Schedule deployment window
+  [ ] Have support team ready
+
+DEPLOYMENT
+
+  [ ] Deploy to production
+  [ ] Verify deployment successful
+  [ ] Check logs for errors
+  [ ] Verify application loads
+  [ ] Test with Admin account
+  [ ] Test with Chargé account
+  [ ] Verify all features work
+
+POST-DEPLOYMENT
+
+  [ ] Monitor application
+  [ ] Check error logs
+  [ ] Verify user access
+  [ ] Confirm performance
+  [ ] Address any issues immediately
+  [ ] Document any incidents
+  [ ] Send success notification
+
+ROLLBACK PLAN (If needed)
+
+  [ ] Revert to previous version
+  [ ] Verify rollback successful
+  [ ] Notify stakeholders
+  [ ] Document what went wrong
+  [ ] Plan corrective action
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+POST-DEPLOYMENT (Phase 8)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MONITORING
+
+  [ ] Monitor application uptime
+  [ ] Monitor error rates
+  [ ] Monitor performance metrics
+  [ ] Monitor user access
+  [ ] Monitor API calls
+  [ ] Set up alerts
+
+USER FEEDBACK
+
+  [ ] Collect user feedback
+  [ ] Address issues quickly
+  [ ] Document common questions
+  [ ] Update documentation if needed
+
+MAINTENANCE
+
+  [ ] Regular security updates
+  [ ] Database maintenance
+  [ ] Log rotation
+  [ ] Backup verification
+  [ ] Performance optimization
+  [ ] Feature enhancements
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ ALL PHASES COMPLETED?
+
+  If YES: Ready for production deployment! 🚀
+  If NO: Complete missing items and recheck
+
+Contact Support: See MASTER_INDEX.md
+
+Deployment Date: _____________
+Deployed By: _________________
+Approved By: __________________
+Sign-off: ____________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

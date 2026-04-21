@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#2563EB" stroke="#1E40AF" stroke-width="2"/>
+  
+  <!-- Letter A with tech style -->
+  <g fill="white">
+    <!-- Left diagonal line of A -->
+    <polygon points="60,160 80,60 85,60 100,160" fill="white"/>
+    <!-- Right diagonal line of A -->
+    <polygon points="100,160 115,60 120,60 140,160" fill="white"/>
+    <!-- Middle bar of A -->
+    <rect x="65" y="115" width="75" height="8" fill="#2563EB"/>
+  </g>
+  
+  <!-- Tech element: Small lines representing technology/connection -->
+  <g stroke="white" stroke-width="2" fill="none">
+    <line x1="50" y1="40" x2="70" y2="50"/>
+    <line x1="150" y1="40" x2="130" y2="50"/>
+    <circle cx="50" cy="40" r="3" fill="white"/>
+    <circle cx="150" cy="40" r="3" fill="white"/>
+  </g>
+  
+  <!-- Company name arc -->
+  <defs>
+    <path id="topArc" d="M 50,100 A 50,50 0 0,1 150,100" fill="none"/>
+  </defs>
+  <text font-size="10" font-weight="bold" fill="white" letter-spacing="1">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">
+      ADRIA BUSINESS
+    </textPath>
+  </text>
+</svg>
