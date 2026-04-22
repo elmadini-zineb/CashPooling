@@ -597,6 +597,66 @@ export function getAuditLogsByEntity(entityType: string, entityId: string): Audi
   return globalAuditLogs.filter((log) => log.entityType === entityType && log.entityId === entityId)
 }
 
+// PDF Generation function
+export async function generatePDF(amendment: Amendment, contract: CashPoolingContract): Promise<string> {
+  // Simulate PDF generation - in production this would use a library like pdfkit or similar
+  try {
+    // For mock purposes, generate a simple data URL
+    const pdfContent = `
+      Avenant à la Convention de Trésorerie
+      Référence: ${amendment.amendmentNumber}
+      Convention: ${contract.contractNumber}
+      Client: ${contract.clientName}
+      Date d'effet: ${amendment.effectiveDate.toLocaleDateString('fr-FR')}
+      
+      Modifications apportées:
+      ${
+        amendment.modifyLeveling
+          ? `- Modification du mode de nivellement`
+          : ''
+      }
+      ${
+        amendment.modifyDebitCoverage
+          ? `- Modification de la couverture débitrice`
+          : ''
+      }
+      ${
+        amendment.modifySecondaryAccounts
+          ? `- Modification des comptes secondaires`
+          : ''
+      }
+      ${
+        amendment.modifyIntermediateAccounts
+          ? `- Modification des comptes intermédiaires`
+          : ''
+      }
+      ${
+        amendment.modifyEndDate
+          ? `- Modification de la date de fin`
+          : ''
+      }
+      
+      Objet: ${amendment.subject}
+      Motif: ${amendment.reason}
+    `
+
+    // Create a data URL (in production, this would be an actual PDF blob)
+    const base64 = Buffer.from(pdfContent).toString('base64')
+    const pdfUrl = `data:application/pdf;base64,${base64}`
+
+    // Update amendment with PDF URL
+    const foundAmendment = globalAmendments.find((a) => a.id === amendment.id)
+    if (foundAmendment) {
+      foundAmendment.pdfUrl = pdfUrl
+    }
+
+    return pdfUrl
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    throw new Error('Failed to generate PDF')
+  }
+}
+
 // Initialize with sample amendments and audit logs
 export function initializeSampleData(): void {
   // Clear existing data

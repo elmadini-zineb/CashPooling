@@ -313,7 +313,7 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
         createdAt: new Date(),
       })
 
-      router.push(`/conventions/${contract.id}/amendment/${newAmendment.id}`)
+      router.push(`/conventions/${contract.id}/amendment/${newAmendment.id}/preview`)
     } catch (error) {
       console.error("Error creating amendment:", error)
       alert("Erreur lors de la création de l'avenant")
