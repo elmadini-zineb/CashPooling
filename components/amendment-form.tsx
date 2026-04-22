@@ -37,19 +37,11 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
       .split("T")[0]
   )
 
-  // Section selection
-  const [modifyPricing, setModifyPricing] = useState(true)
+  // Section selection - removed modifyPricing
   const [modifyLeveling, setModifyLeveling] = useState(false)
   const [modifyDebitCoverage, setModifyDebitCoverage] = useState(false)
   const [modifySecondaryAccounts, setModifySecondaryAccounts] = useState(false)
-
-  // Pricing state
-  const [billingFrequency, setBillingFrequency] = useState("monthly")
-  const [leveledAmountRate, setLeveledAmountRate] = useState(0.05)
-  const [operationFeesZBA, setOperationFeesZBA] = useState(8)
-  const [operationFeesTBA, setOperationFeesTBA] = useState(12)
-  const [operationFeesFBA, setOperationFeesFBA] = useState(6)
-  const [secondaryAccountFees, setSecondaryAccountFees] = useState(200)
+  const [modifyIntermediateAccounts, setModifyIntermediateAccounts] = useState(false)
 
   // Leveling state
   const [levelingModes, setLevelingModes] = useState({
@@ -70,6 +62,10 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
   // Secondary accounts state
   const [accountsToAdd, setAccountsToAdd] = useState<Account[]>([])
   const [accountsToRemove, setAccountsToRemove] = useState<string[]>([])
+  
+  // Intermediate accounts state
+  const [intermediateAccountsToAdd, setIntermediateAccountsToAdd] = useState<Account[]>([])
+  const [intermediateAccountsToRemove, setIntermediateAccountsToRemove] = useState<string[]>([])
 
   // Auto-generated reference
   const nextAmendmentNumber = useMemo(
@@ -89,29 +85,6 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
   const autoReference = `AVN-${contract.contractNumber}-${nextAmendmentNumber}`
 
   // Handle pricing changes
-  const handlePricingChange = (field: string, value: any) => {
-    switch (field) {
-      case "billingFrequency":
-        setBillingFrequency(value)
-        break
-      case "leveledAmountRate":
-        setLeveledAmountRate(value)
-        break
-      case "operationFeesZBA":
-        setOperationFeesZBA(value)
-        break
-      case "operationFeesTBA":
-        setOperationFeesTBA(value)
-        break
-      case "operationFeesFBA":
-        setOperationFeesFBA(value)
-        break
-      case "secondaryAccountFees":
-        setSecondaryAccountFees(value)
-        break
-    }
-  }
-
   // Handle debit coverage change
   const handleDebitCoverageChange = (mode: string, priorities?: any) => {
     setDebitCoverageMode(mode)
@@ -197,57 +170,38 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
 
   // Check if there are actual changes
   const hasChanges = useMemo(() => {
-    const originalPricing = contract.pricingConfig || {
-      billingFrequency: "monthly",
-      leveledAmountRate: 0.05,
-    }
-
-    if (modifyPricing) {
-      if (
-        billingFrequency !== originalPricing.billingFrequency ||
-        leveledAmountRate !== originalPricing.leveledAmountRate ||
-        operationFeesZBA !== 8 ||
-        operationFeesTBA !== 12 ||
-        operationFeesFBA !== 6 ||
-        secondaryAccountFees !== 200
-      ) {
-        return true
-      }
-    }
-
     if (modifyLeveling) {
-      return true // Simplified: any selection means change
+      return true
     }
 
     if (modifyDebitCoverage) {
-      return true // Simplified: any selection means change
+      return true
     }
 
     if (modifySecondaryAccounts && (accountsToAdd.length > 0 || accountsToRemove.length > 0)) {
       return true
     }
 
+    if (modifyIntermediateAccounts && (intermediateAccountsToAdd.length > 0 || intermediateAccountsToRemove.length > 0)) {
+      return true
+    }
+
     return false
   }, [
-    modifyPricing,
     modifyLeveling,
     modifyDebitCoverage,
     modifySecondaryAccounts,
-    billingFrequency,
-    leveledAmountRate,
-    operationFeesZBA,
-    operationFeesTBA,
-    operationFeesFBA,
-    secondaryAccountFees,
+    modifyIntermediateAccounts,
     accountsToAdd,
     accountsToRemove,
-    contract.pricingConfig,
+    intermediateAccountsToAdd,
+    intermediateAccountsToRemove,
   ])
 
   // Form validation
   const isFormValid = useMemo(() => {
     const hasSelection =
-      modifyPricing || modifyLeveling || modifyDebitCoverage || modifySecondaryAccounts
+      modifyLeveling || modifyDebitCoverage || modifySecondaryAccounts || modifyIntermediateAccounts
     const hasRequiredFields = subject.trim() && reason.trim()
     const noValidationErrors =
       Object.keys(validateLevelingModes).length === 0 &&
@@ -256,10 +210,10 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
 
     return hasSelection && hasRequiredFields && hasChanges && noValidationErrors
   }, [
-    modifyPricing,
     modifyLeveling,
     modifyDebitCoverage,
     modifySecondaryAccounts,
+    modifyIntermediateAccounts,
     subject,
     reason,
     hasChanges,
@@ -299,10 +253,11 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
         reason,
         effectiveDate: new Date(effectiveDate),
         status: "pending_signature",
-        modifyPricing,
         modifyLeveling,
         modifyDebitCoverage,
         modifySecondaryAccounts,
+        modifyIntermediateAccounts,
+        modifyPricing: false,
         previousPricingConfig: contract.pricingConfig || newPricingConfig,
         newPricingConfig,
         levelingChanges: modifyLeveling ? levelingModes : undefined,
@@ -319,6 +274,12 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
               accountsToRemove,
             }
           : undefined,
+        intermediateAccountsChanges: modifyIntermediateAccounts
+          ? {
+              accountsToAdd: intermediateAccountsToAdd,
+              accountsToRemove: intermediateAccountsToRemove,
+            }
+          : undefined,
         createdBy: "adria@admin.com",
         createdAt: new Date(),
       }
@@ -331,7 +292,7 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
         entityId: newAmendment.id,
         action: `Avenant ${autoReference} généré et en attente de signature`,
         userEmail: "adria@admin.com",
-        details: { subject, modifyPricing, modifyLeveling, modifyDebitCoverage, modifySecondaryAccounts },
+        details: { subject, modifyLeveling, modifyDebitCoverage, modifySecondaryAccounts, modifyIntermediateAccounts },
         createdAt: new Date(),
       })
 
@@ -439,16 +400,6 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
           <CardContent className="space-y-3">
             <div className="flex items-center gap-3">
               <Checkbox
-                id="modify-pricing"
-                checked={modifyPricing}
-                onCheckedChange={(checked) => setModifyPricing(checked as boolean)}
-              />
-              <Label htmlFor="modify-pricing" className="font-medium cursor-pointer">
-                Tarification
-              </Label>
-            </div>
-            <div className="flex items-center gap-3">
-              <Checkbox
                 id="modify-leveling"
                 checked={modifyLeveling}
                 onCheckedChange={(checked) => setModifyLeveling(checked as boolean)}
@@ -477,23 +428,26 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
                 Comptes secondaires
               </Label>
             </div>
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="modify-intermediate-accounts"
+                checked={modifyIntermediateAccounts}
+                onCheckedChange={(checked) => setModifyIntermediateAccounts(checked as boolean)}
+              />
+              <Label htmlFor="modify-intermediate-accounts" className="font-medium cursor-pointer">
+                Comptes intermédiaires
+              </Label>
+            </div>
           </CardContent>
         </Card>
 
         {/* Amendment Sections */}
         <AmendmentSections
           contract={contract}
-          modifyPricing={modifyPricing}
           modifyLeveling={modifyLeveling}
           modifyDebitCoverage={modifyDebitCoverage}
           modifySecondaryAccounts={modifySecondaryAccounts}
-          billingFrequency={billingFrequency}
-          leveledAmountRate={leveledAmountRate}
-          operationFeesZBA={operationFeesZBA}
-          operationFeesTBA={operationFeesTBA}
-          operationFeesFBA={operationFeesFBA}
-          secondaryAccountFees={secondaryAccountFees}
-          onPricingChange={handlePricingChange}
+          modifyIntermediateAccounts={modifyIntermediateAccounts}
           levelingModes={levelingModes}
           onLevelingChange={setLevelingModes}
           levelingErrors={levelingErrors}
@@ -503,6 +457,12 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
           accountsToAdd={accountsToAdd}
           accountsToRemove={accountsToRemove}
           onAccountsChange={handleAccountsChange}
+          intermediateAccountsToAdd={intermediateAccountsToAdd}
+          intermediateAccountsToRemove={intermediateAccountsToRemove}
+          onIntermediateAccountsChange={(toAdd, toRemove) => {
+            setIntermediateAccountsToAdd(toAdd)
+            setIntermediateAccountsToRemove(toRemove)
+          }}
         />
 
         {/* Master Account (Read-only) */}

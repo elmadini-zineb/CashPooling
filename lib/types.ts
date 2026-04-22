@@ -327,6 +327,7 @@ export interface Amendment {
   modifyLeveling: boolean
   modifyDebitCoverage: boolean
   modifySecondaryAccounts: boolean
+  modifyIntermediateAccounts: boolean
   
   // Pricing modifications
   previousPricingConfig: PricingConfig
@@ -349,6 +350,12 @@ export interface Amendment {
   
   // Secondary accounts modifications (if applicable)
   accountsChanges?: {
+    accountsToAdd: Account[]
+    accountsToRemove: string[] // IDs
+  }
+  
+  // Intermediate accounts modifications (if applicable)
+  intermediateAccountsChanges?: {
     accountsToAdd: Account[]
     accountsToRemove: string[] // IDs
   }

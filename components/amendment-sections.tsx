@@ -5,51 +5,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ChevronDown } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ChevronDown, Plus, Trash2, AlertCircle } from "lucide-react"
 import type { CashPoolingContract, Account } from "@/lib/types"
 
 interface AmendmentSectionsProps {
   contract: CashPoolingContract
-  modifyPricing: boolean
   modifyLeveling: boolean
   modifyDebitCoverage: boolean
   modifySecondaryAccounts: boolean
-  // Pricing state
-  billingFrequency: string
-  leveledAmountRate: number
-  operationFeesZBA: number
-  operationFeesTBA: number
-  operationFeesFBA: number
-  secondaryAccountFees: number
-  onPricingChange: (field: string, value: any) => void
-  // Leveling state
+  modifyIntermediateAccounts: boolean
   levelingModes: any
   onLevelingChange: (modes: any) => void
   levelingErrors: any
-  // Debit coverage state
   debitCoverageMode: string
   debitCoveragePriorities: any
   onDebitCoverageChange: (mode: string, priorities?: any) => void
-  // Secondary accounts state
   accountsToAdd: Account[]
   accountsToRemove: string[]
   onAccountsChange: (toAdd: Account[], toRemove: string[]) => void
+  intermediateAccountsToAdd: Account[]
+  intermediateAccountsToRemove: string[]
+  onIntermediateAccountsChange: (toAdd: Account[], toRemove: string[]) => void
 }
 
 export function AmendmentSections({
   contract,
-  modifyPricing,
   modifyLeveling,
   modifyDebitCoverage,
   modifySecondaryAccounts,
-  billingFrequency,
-  leveledAmountRate,
-  operationFeesZBA,
-  operationFeesTBA,
-  operationFeesFBA,
-  secondaryAccountFees,
-  onPricingChange,
+  modifyIntermediateAccounts,
   levelingModes,
   onLevelingChange,
   levelingErrors,
@@ -59,13 +46,19 @@ export function AmendmentSections({
   accountsToAdd,
   accountsToRemove,
   onAccountsChange,
+  intermediateAccountsToAdd,
+  intermediateAccountsToRemove,
+  onIntermediateAccountsChange,
 }: AmendmentSectionsProps) {
   const [expandedSections, setExpandedSections] = useState({
-    pricing: true,
     leveling: true,
     coverage: true,
-    accounts: true,
+    secondaryAccounts: true,
+    intermediateAccounts: true,
   })
+
+  const [newSecondaryAccount, setNewSecondaryAccount] = useState<string>("")
+  const [newIntermediateAccount, setNewIntermediateAccount] = useState<string>("")
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
@@ -74,193 +67,78 @@ export function AmendmentSections({
     }))
   }
 
-  const renderChangeIndicator = (oldValue: any, newValue: any, format: string = "") => {
-    if (oldValue === newValue) return null
-
-    let formattedOld = oldValue
-    let formattedNew = newValue
-
-    if (format === "percent") {
-      formattedOld = `${oldValue}%`
-      formattedNew = `${newValue}%`
-    } else if (format === "currency") {
-      formattedOld = `${oldValue} MAD`
-      formattedNew = `${newValue} MAD`
-    }
-
-    return (
-      <div className="ml-2 inline-flex items-center gap-1 text-sm">
-        <span className="line-through text-slate-400">{formattedOld}</span>
-        <span className="text-slate-400">→</span>
-        <span className="font-semibold text-green-600">{formattedNew}</span>
-      </div>
-    )
-  }
-
-  const originalPricing = contract.pricingConfig || {
-    type: "variable",
-    billingFrequency: "monthly",
-    leveledAmountRate: 0.05,
-    levelingOperationFees: 8,
-    secondaryAccountFees: 200,
-  }
-
   const CollapsibleSection = ({
     title,
     icon,
     isExpanded,
     onToggle,
     children,
+    error,
   }: {
     title: string
     icon?: string
     isExpanded: boolean
     onToggle: () => void
     children: React.ReactNode
+    error?: string
   }) => (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
+    <div className={`border ${error ? "border-red-200" : "border-slate-200"} rounded-lg overflow-hidden`}>
       <button
         type="button"
         onClick={onToggle}
-        className="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 flex items-center justify-between font-medium text-sm text-slate-900 transition-colors"
+        className={`w-full px-4 py-3 ${error ? "bg-red-50 hover:bg-red-100" : "bg-slate-50 hover:bg-slate-100"} flex items-center justify-between font-medium text-sm ${error ? "text-red-900" : "text-slate-900"} transition-colors`}
       >
         <span className="flex items-center gap-2">
           {icon && <span>{icon}</span>}
           {title}
+          {error && <AlertCircle className="h-4 w-4 ml-2 text-red-600" />}
         </span>
         <ChevronDown
           className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
         />
       </button>
-      {isExpanded && <div className="p-4 bg-white space-y-4">{children}</div>}
+      {isExpanded && (
+        <div className="p-4 bg-white space-y-4">
+          {error && (
+            <Alert className="bg-red-50 border-red-200">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-700 ml-2">{error}</AlertDescription>
+            </Alert>
+          )}
+          {children}
+        </div>
+      )}
     </div>
   )
 
+  // Helper to get all available accounts (secondary accounts)
+  const allSecondaryAccounts = contract.secondaryAccounts || []
+  const selectedSecondaryAccountIds = new Set([
+    ...allSecondaryAccounts.map(a => a.id),
+    ...accountsToAdd.map(a => a.id),
+    ...accountsToRemove,
+  ])
+
+  // Validation for secondary accounts
+  const secondaryAccountsError = (() => {
+    const totalAccounts = allSecondaryAccounts.filter(a => !accountsToRemove.includes(a.id)).length + accountsToAdd.length
+    if (modifySecondaryAccounts && totalAccounts === 0) {
+      return "La convention doit conserver au minimum un compte secondaire"
+    }
+    return undefined
+  })()
+
+  // Helper to get all available accounts (intermediate accounts)
+  const allIntermediateAccounts = contract.linkedAccountIds?.map(id => ({
+    id,
+    accountNumber: `ACC-${id}`,
+    iban: "—",
+    clientName: contract.clientName,
+    balance: 0,
+  } as Account)) || []
+
   return (
     <div className="space-y-4">
-      {/* TARIFICATION */}
-      {modifyPricing && (
-        <CollapsibleSection
-          title="Tarification"
-          icon="💰"
-          isExpanded={expandedSections.pricing}
-          onToggle={() => toggleSection("pricing")}
-        >
-          <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-medium">Périodicité de facturation</Label>
-              <div className="flex items-center gap-3 mt-1.5">
-                <select
-                  value={billingFrequency}
-                  onChange={(e) => onPricingChange("billingFrequency", e.target.value)}
-                  className="px-3 py-2 border border-slate-300 rounded-md text-sm flex-1"
-                >
-                  <option value="monthly">Mensuelle</option>
-                  <option value="quarterly">Trimestrielle</option>
-                  <option value="annual">Annuelle</option>
-                </select>
-                {renderChangeIndicator(
-                  originalPricing.billingFrequency,
-                  billingFrequency
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium">Taux sur montant nivelé</Label>
-              <div className="flex items-center gap-3 mt-1.5">
-                <div className="flex-1 flex items-center gap-2">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={leveledAmountRate}
-                    onChange={(e) => onPricingChange("leveledAmountRate", Number(e.target.value))}
-                    className="flex-1"
-                  />
-                  <span className="text-slate-600 font-medium">%</span>
-                </div>
-                {renderChangeIndicator(
-                  originalPricing.leveledAmountRate || 0.05,
-                  leveledAmountRate,
-                  "percent"
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-2 border-t border-slate-200">
-              <p className="text-sm font-semibold text-slate-900">
-                Frais par opération de nivellement
-              </p>
-
-              <div>
-                <Label className="text-sm font-medium">
-                  Frais par sweep automatique (MAD)
-                </Label>
-                <p className="text-xs text-slate-600 mb-1.5">Compte MT Casablanca — mode ZBA</p>
-                <div className="flex items-center gap-3">
-                  <Input
-                    type="number"
-                    value={operationFeesZBA}
-                    onChange={(e) => onPricingChange("operationFeesZBA", Number(e.target.value))}
-                    className="flex-1"
-                  />
-                  {renderChangeIndicator(8, operationFeesZBA, "currency")}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium">
-                  Frais par ajustement vers solde cible (MAD)
-                </Label>
-                <p className="text-xs text-slate-600 mb-1.5">Compte MT Rabat — mode TBA</p>
-                <div className="flex items-center gap-3">
-                  <Input
-                    type="number"
-                    value={operationFeesTBA}
-                    onChange={(e) => onPricingChange("operationFeesTBA", Number(e.target.value))}
-                    className="flex-1"
-                  />
-                  {renderChangeIndicator(12, operationFeesTBA, "currency")}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium">
-                  Frais par opération dans la plage (MAD)
-                </Label>
-                <p className="text-xs text-slate-600 mb-1.5">Compte MT Tanger — mode FBA</p>
-                <div className="flex items-center gap-3">
-                  <Input
-                    type="number"
-                    value={operationFeesFBA}
-                    onChange={(e) => onPricingChange("operationFeesFBA", Number(e.target.value))}
-                    className="flex-1"
-                  />
-                  {renderChangeIndicator(6, operationFeesFBA, "currency")}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium">Frais par compte secondaire/mois</Label>
-              <div className="flex items-center gap-3 mt-1.5">
-                <Input
-                  type="number"
-                  value={secondaryAccountFees}
-                  onChange={(e) => onPricingChange("secondaryAccountFees", Number(e.target.value))}
-                  className="flex-1"
-                />
-                {renderChangeIndicator(
-                  originalPricing.secondaryAccountFees || 200,
-                  secondaryAccountFees,
-                  "currency"
-                )}
-              </div>
-            </div>
-          </div>
-        </CollapsibleSection>
-      )}
-
       {/* NIVELLEMENT */}
       {modifyLeveling && (
         <CollapsibleSection
@@ -403,9 +281,7 @@ export function AmendmentSections({
                   <tr>
                     <td className="px-4 py-3">MT Tanger</td>
                     <td className="px-4 py-3">
-                      <Badge className="bg-orange-100 text-orange-800 border-orange-300">
-                        FBA
-                      </Badge>
+                      <Badge className="bg-orange-100 text-orange-800 border-orange-300">FBA</Badge>
                     </td>
                     <td className="px-4 py-3">
                       <select
@@ -417,10 +293,10 @@ export function AmendmentSections({
                             tanger: {
                               mode: newMode,
                               params:
-                                newMode === "FBA"
-                                  ? { minThreshold: 100000, maxThreshold: 800000 }
-                                  : newMode === "TBA"
-                                    ? { targetBalance: 0 }
+                                newMode === "TBA"
+                                  ? { targetBalance: 0 }
+                                  : newMode === "FBA"
+                                    ? { minThreshold: 100000, maxThreshold: 800000 }
                                     : {},
                             },
                           })
@@ -495,134 +371,91 @@ export function AmendmentSections({
                 </tbody>
               </table>
             </div>
-
-            {levelingErrors && (
-              <div className="space-y-2">
-                {levelingErrors.rabatTBA && (
-                  <Alert className="bg-red-50 border-red-200">
-                    <AlertDescription className="text-red-700">
-                      {levelingErrors.rabatTBA}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                {levelingErrors.tangerFBA && (
-                  <Alert className="bg-red-50 border-red-200">
-                    <AlertDescription className="text-red-700">
-                      {levelingErrors.tangerFBA}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            )}
           </div>
         </CollapsibleSection>
       )}
 
-      {/* COUVERTURE DÉBITRICE */}
+      {/* COUVERTURE DEBITRICE */}
       {modifyDebitCoverage && (
         <CollapsibleSection
-          title="Couverture débitrice"
-          icon="🔒"
+          title="Couverture débitrice et priorités"
+          icon="🔐"
           isExpanded={expandedSections.coverage}
           onToggle={() => toggleSection("coverage")}
         >
           <div className="space-y-4">
             <div>
-              <Label className="text-sm font-medium mb-3 block">Mode de couverture</Label>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  type="button"
-                  onClick={() => onDebitCoverageChange("full")}
-                  className={`p-3 border-2 rounded-lg text-left transition-all ${
-                    debitCoverageMode === "full"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="font-semibold text-sm">Full</div>
-                  <p className="text-xs text-slate-600 mt-1">
-                    Couverture totale du débit depuis le compte centralisateur
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onDebitCoverageChange("partial")}
-                  className={`p-3 border-2 rounded-lg text-left transition-all ${
-                    debitCoverageMode === "partial"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-slate-200 hover:border-slate-300"
-                  }`}
-                >
-                  <div className="font-semibold text-sm">Partial</div>
-                  <p className="text-xs text-slate-600 mt-1">
-                    Couverture sélective par priorité de compte
-                  </p>
-                </button>
-              </div>
+              <Label className="text-sm font-medium">Type de couverture</Label>
+              <select
+                value={debitCoverageMode}
+                onChange={(e) => onDebitCoverageChange(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mt-1.5"
+              >
+                <option value="full">Couverture complète (tous les comptes)</option>
+                <option value="partial">Couverture partielle (sélective)</option>
+              </select>
+              <p className="text-xs text-slate-600 mt-2">
+                {debitCoverageMode === "full"
+                  ? "Tous les comptes secondaires couvriront les débits du compte centralisateur"
+                  : "Vous pouvez sélectionner les comptes par ordre de priorité"}
+              </p>
             </div>
 
-            {debitCoverageMode === "partial" && (
-              <div className="space-y-3 pt-3 border-t border-slate-200">
-                <p className="text-sm font-semibold">Priorités par compte</p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs font-medium w-32">MT Casablanca</Label>
-                    <Input
-                      type="number"
-                      value={debitCoveragePriorities.casablanca.priority}
-                      onChange={(e) =>
-                        onDebitCoverageChange("partial", {
-                          ...debitCoveragePriorities,
-                          casablanca: {
-                            ...debitCoveragePriorities.casablanca,
-                            priority: Number(e.target.value),
-                          },
-                        })
-                      }
-                      placeholder="Priorité (1-3)"
-                      className="w-20"
-                    />
+            {/* Afficher tous les comptes secondaires disponibles */}
+            <div className="space-y-3 border-t pt-4">
+              <p className="text-sm font-semibold text-slate-900">Comptes secondaires</p>
+              <div className="space-y-2 bg-slate-50 p-3 rounded-md max-h-48 overflow-y-auto">
+                {allSecondaryAccounts.map((account, idx) => (
+                  <div key={account.id} className="flex items-center gap-3 p-2 bg-white rounded border border-slate-200">
+                    <Badge variant="outline" className="bg-blue-50">
+                      {idx + 1}
+                    </Badge>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                      <p className="text-xs text-slate-600">{account.iban}</p>
+                    </div>
+                    {debitCoverageMode === "partial" && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={debitCoveragePriorities[account.id]?.priority || idx + 1}
+                          onChange={(e) => {
+                            const newPriorities = {
+                              ...debitCoveragePriorities,
+                              [account.id]: {
+                                ...debitCoveragePriorities[account.id],
+                                priority: Number(e.target.value),
+                              },
+                            }
+                            onDebitCoverageChange(debitCoverageMode, newPriorities)
+                          }}
+                          className="w-16"
+                          placeholder="Priorité"
+                        />
+                        <Input
+                          type="number"
+                          value={debitCoveragePriorities[account.id]?.minAmount || 0}
+                          onChange={(e) => {
+                            const newPriorities = {
+                              ...debitCoveragePriorities,
+                              [account.id]: {
+                                ...debitCoveragePriorities[account.id],
+                                minAmount: Number(e.target.value),
+                              },
+                            }
+                            onDebitCoverageChange(debitCoverageMode, newPriorities)
+                          }}
+                          className="w-24"
+                          placeholder="Montant min"
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs font-medium w-32">MT Rabat</Label>
-                    <Input
-                      type="number"
-                      value={debitCoveragePriorities.rabat.priority}
-                      onChange={(e) =>
-                        onDebitCoverageChange("partial", {
-                          ...debitCoveragePriorities,
-                          rabat: {
-                            ...debitCoveragePriorities.rabat,
-                            priority: Number(e.target.value),
-                          },
-                        })
-                      }
-                      placeholder="Priorité (1-3)"
-                      className="w-20"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs font-medium w-32">MT Tanger</Label>
-                    <Input
-                      type="number"
-                      value={debitCoveragePriorities.tanger.priority}
-                      onChange={(e) =>
-                        onDebitCoverageChange("partial", {
-                          ...debitCoveragePriorities,
-                          tanger: {
-                            ...debitCoveragePriorities.tanger,
-                            priority: Number(e.target.value),
-                          },
-                        })
-                      }
-                      placeholder="Priorité (1-3)"
-                      className="w-20"
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
         </CollapsibleSection>
       )}
@@ -630,87 +463,247 @@ export function AmendmentSections({
       {/* COMPTES SECONDAIRES */}
       {modifySecondaryAccounts && (
         <CollapsibleSection
-          title="Comptes secondaires"
-          icon="👥"
-          isExpanded={expandedSections.accounts}
-          onToggle={() => toggleSection("accounts")}
+          title="Gestion des comptes secondaires"
+          icon="🏦"
+          isExpanded={expandedSections.secondaryAccounts}
+          onToggle={() => toggleSection("secondaryAccounts")}
+          error={secondaryAccountsError}
         >
           <div className="space-y-4">
-            {accountsToRemove.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-red-600 mb-2">Comptes à retirer</p>
-                <div className="space-y-1">
-                  {accountsToRemove.map((accountId) => {
-                    const account = contract.secondaryAccounts.find((a) => a.id === accountId)
-                    return (
-                      <div
-                        key={accountId}
-                        className="p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700 flex items-center justify-between"
-                      >
-                        <span className="line-through">{account?.accountNumber}</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            onAccountsChange(
-                              accountsToAdd,
-                              accountsToRemove.filter((id) => id !== accountId)
-                            )
-                          }
-                          className="text-red-600 hover:text-red-700 font-semibold"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {accountsToAdd.length > 0 && (
-              <div>
-                <p className="text-sm font-medium text-green-600 mb-2">Comptes à ajouter</p>
-                <div className="space-y-1">
-                  {accountsToAdd.map((account) => (
-                    <div
-                      key={account.id}
-                      className="p-2 bg-green-50 border border-green-200 rounded text-sm text-green-700 flex items-center justify-between"
-                    >
-                      <span className="font-semibold">{account.accountNumber}</span>
-                      <button
-                        type="button"
-                        onClick={() =>
+            {/* Comptes existants */}
+            <div>
+              <p className="text-sm font-semibold text-slate-900 mb-2">Comptes existants</p>
+              <div className="space-y-2">
+                {allSecondaryAccounts.map((account) => (
+                  <div
+                    key={account.id}
+                    className={`flex items-center gap-3 p-3 border rounded-md ${
+                      accountsToRemove.includes(account.id)
+                        ? "bg-red-50 border-red-200 opacity-60"
+                        : "bg-white border-slate-200"
+                    }`}
+                  >
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                      <p className="text-xs text-slate-600">{account.iban}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant={accountsToRemove.includes(account.id) ? "destructive" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        if (accountsToRemove.includes(account.id)) {
                           onAccountsChange(
-                            accountsToAdd.filter((a) => a.id !== account.id),
-                            accountsToRemove
+                            accountsToAdd,
+                            accountsToRemove.filter(id => id !== account.id)
+                          )
+                        } else {
+                          onAccountsChange(
+                            accountsToAdd,
+                            [...accountsToRemove, account.id]
                           )
                         }
-                        className="text-green-600 hover:text-green-700 font-semibold"
+                      }}
+                    >
+                      {accountsToRemove.includes(account.id) ? "Restaurer" : <Trash2 className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              {allSecondaryAccounts.length === 0 && (
+                <p className="text-sm text-slate-600 italic">Aucun compte secondaire existant</p>
+              )}
+            </div>
+
+            {/* Ajouter des comptes */}
+            <div className="border-t pt-4">
+              <p className="text-sm font-semibold text-slate-900 mb-2">Ajouter des comptes</p>
+              <div className="flex gap-2 mb-3">
+                <Input
+                  placeholder="Numéro de compte ou IBAN"
+                  value={newSecondaryAccount}
+                  onChange={(e) => setNewSecondaryAccount(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (newSecondaryAccount.trim()) {
+                      const newAccount: Account = {
+                        id: `new-secondary-${Date.now()}`,
+                        accountNumber: newSecondaryAccount,
+                        iban: "—",
+                        clientId: contract.clientId,
+                        clientName: contract.clientName,
+                        companyName: contract.clientName,
+                        balance: 0,
+                        currency: "MAD",
+                        status: "active",
+                        accountType: "secondary",
+                        createdAt: new Date(),
+                      }
+                      onAccountsChange([...accountsToAdd, newAccount], accountsToRemove)
+                      setNewSecondaryAccount("")
+                    }
+                  }}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Ajouter
+                </Button>
+              </div>
+              {accountsToAdd.length > 0 && (
+                <div className="space-y-2 bg-green-50 p-3 rounded-md">
+                  {accountsToAdd.map((account) => (
+                    <div key={account.id} className="flex items-center gap-3 p-2 bg-white rounded border border-green-200">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                        <p className="text-xs text-slate-600">Nouveau compte</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          onAccountsChange(
+                            accountsToAdd.filter(a => a.id !== account.id),
+                            accountsToRemove
+                          )
+                        }}
                       >
-                        ✕
-                      </button>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {accountsToRemove.length === 0 && accountsToAdd.length === 0 && (
-              <Alert className="bg-slate-50 border-slate-200">
-                <AlertDescription className="text-slate-600">
-                  Aucune modification de compte pour le moment.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {accountsToRemove.length === contract.secondaryAccounts.length &&
-              accountsToAdd.length === 0 && (
-                <Alert className="bg-orange-50 border-orange-200">
-                  <AlertDescription className="text-orange-700 font-semibold">
-                    ⚠️ La convention doit conserver au minimum un compte secondaire.
-                  </AlertDescription>
-                </Alert>
               )}
+            </div>
+          </div>
+        </CollapsibleSection>
+      )}
+
+      {/* COMPTES INTERMEDIAIRES */}
+      {modifyIntermediateAccounts && (
+        <CollapsibleSection
+          title="Gestion des comptes intermédiaires"
+          icon="🔗"
+          isExpanded={expandedSections.intermediateAccounts}
+          onToggle={() => toggleSection("intermediateAccounts")}
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-slate-700">
+              Les comptes intermédiaires sont les comptes liés utilisés pour les opérations de transit ou de compensation.
+            </p>
+
+            {/* Comptes existants */}
+            <div>
+              <p className="text-sm font-semibold text-slate-900 mb-2">Comptes intermédiaires existants</p>
+              <div className="space-y-2">
+                {allIntermediateAccounts.length > 0 ? (
+                  allIntermediateAccounts.map((account) => (
+                    <div
+                      key={account.id}
+                      className={`flex items-center gap-3 p-3 border rounded-md ${
+                        intermediateAccountsToRemove.includes(account.id)
+                          ? "bg-red-50 border-red-200 opacity-60"
+                          : "bg-white border-slate-200"
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                        <p className="text-xs text-slate-600">{account.iban}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant={intermediateAccountsToRemove.includes(account.id) ? "destructive" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          if (intermediateAccountsToRemove.includes(account.id)) {
+                            onIntermediateAccountsChange(
+                              intermediateAccountsToAdd,
+                              intermediateAccountsToRemove.filter(id => id !== account.id)
+                            )
+                          } else {
+                            onIntermediateAccountsChange(
+                              intermediateAccountsToAdd,
+                              [...intermediateAccountsToRemove, account.id]
+                            )
+                          }
+                        }}
+                      >
+                        {intermediateAccountsToRemove.includes(account.id) ? "Restaurer" : <Trash2 className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-600 italic">Aucun compte intermédiaire existant</p>
+                )}
+              </div>
+            </div>
+
+            {/* Ajouter des comptes */}
+            <div className="border-t pt-4">
+              <p className="text-sm font-semibold text-slate-900 mb-2">Ajouter des comptes intermédiaires</p>
+              <div className="flex gap-2 mb-3">
+                <Input
+                  placeholder="Numéro de compte ou IBAN"
+                  value={newIntermediateAccount}
+                  onChange={(e) => setNewIntermediateAccount(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (newIntermediateAccount.trim()) {
+                      const newAccount: Account = {
+                        id: `new-intermediate-${Date.now()}`,
+                        accountNumber: newIntermediateAccount,
+                        iban: "—",
+                        clientId: contract.clientId,
+                        clientName: contract.clientName,
+                        companyName: contract.clientName,
+                        balance: 0,
+                        currency: "MAD",
+                        status: "active",
+                        accountType: "intermediate",
+                        createdAt: new Date(),
+                      }
+                      onIntermediateAccountsChange([...intermediateAccountsToAdd, newAccount], intermediateAccountsToRemove)
+                      setNewIntermediateAccount("")
+                    }
+                  }}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Ajouter
+                </Button>
+              </div>
+              {intermediateAccountsToAdd.length > 0 && (
+                <div className="space-y-2 bg-green-50 p-3 rounded-md">
+                  {intermediateAccountsToAdd.map((account) => (
+                    <div key={account.id} className="flex items-center gap-3 p-2 bg-white rounded border border-green-200">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                        <p className="text-xs text-slate-600">Nouveau compte</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          onIntermediateAccountsChange(
+                            intermediateAccountsToAdd.filter(a => a.id !== account.id),
+                            intermediateAccountsToRemove
+                          )
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </CollapsibleSection>
       )}
