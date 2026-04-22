@@ -769,3 +769,6 @@ export function AmendmentSections({
           </div>
         </CollapsibleSection>
       )}
+    </div>
+  )
+}
