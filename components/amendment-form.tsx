@@ -42,6 +42,8 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
   const [modifyDebitCoverage, setModifyDebitCoverage] = useState(false)
   const [modifySecondaryAccounts, setModifySecondaryAccounts] = useState(false)
   const [modifyIntermediateAccounts, setModifyIntermediateAccounts] = useState(false)
+  const [modifyEndDate, setModifyEndDate] = useState(false)
+  const [newEndDate, setNewEndDate] = useState(contract.endDate)
 
   // Leveling state
   const [levelingModes, setLevelingModes] = useState({
@@ -186,22 +188,29 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
       return true
     }
 
+    if (modifyEndDate && newEndDate !== contract.endDate) {
+      return true
+    }
+
     return false
   }, [
     modifyLeveling,
     modifyDebitCoverage,
     modifySecondaryAccounts,
     modifyIntermediateAccounts,
+    modifyEndDate,
     accountsToAdd,
     accountsToRemove,
     intermediateAccountsToAdd,
     intermediateAccountsToRemove,
+    newEndDate,
+    contract.endDate,
   ])
 
   // Form validation
   const isFormValid = useMemo(() => {
     const hasSelection =
-      modifyLeveling || modifyDebitCoverage || modifySecondaryAccounts || modifyIntermediateAccounts
+      modifyLeveling || modifyDebitCoverage || modifySecondaryAccounts || modifyIntermediateAccounts || modifyEndDate
     const hasRequiredFields = subject.trim() && reason.trim()
     const noValidationErrors =
       Object.keys(validateLevelingModes).length === 0 &&
@@ -214,6 +223,7 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
     modifyDebitCoverage,
     modifySecondaryAccounts,
     modifyIntermediateAccounts,
+    modifyEndDate,
     subject,
     reason,
     hasChanges,
@@ -257,6 +267,7 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
         modifyDebitCoverage,
         modifySecondaryAccounts,
         modifyIntermediateAccounts,
+        modifyEndDate,
         modifyPricing: false,
         previousPricingConfig: contract.pricingConfig || newPricingConfig,
         newPricingConfig,
@@ -280,6 +291,12 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
               accountsToRemove: intermediateAccountsToRemove,
             }
           : undefined,
+        endDateChanges: modifyEndDate
+          ? {
+              oldEndDate: contract.endDate,
+              newEndDate: new Date(newEndDate),
+            }
+          : undefined,
         createdBy: "adria@admin.com",
         createdAt: new Date(),
       }
@@ -292,7 +309,7 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
         entityId: newAmendment.id,
         action: `Avenant ${autoReference} généré et en attente de signature`,
         userEmail: "adria@admin.com",
-        details: { subject, modifyLeveling, modifyDebitCoverage, modifySecondaryAccounts, modifyIntermediateAccounts },
+        details: { subject, modifyLeveling, modifyDebitCoverage, modifySecondaryAccounts, modifyIntermediateAccounts, modifyEndDate },
         createdAt: new Date(),
       })
 
@@ -438,6 +455,16 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
                 Comptes intermédiaires
               </Label>
             </div>
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="modify-end-date"
+                checked={modifyEndDate}
+                onCheckedChange={(checked) => setModifyEndDate(checked as boolean)}
+              />
+              <Label htmlFor="modify-end-date" className="font-medium cursor-pointer">
+                Date de fin de la convention
+              </Label>
+            </div>
           </CardContent>
         </Card>
 
@@ -448,6 +475,9 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
           modifyDebitCoverage={modifyDebitCoverage}
           modifySecondaryAccounts={modifySecondaryAccounts}
           modifyIntermediateAccounts={modifyIntermediateAccounts}
+          modifyEndDate={modifyEndDate}
+          newEndDate={newEndDate}
+          onEndDateChange={setNewEndDate}
           levelingModes={levelingModes}
           onLevelingChange={setLevelingModes}
           levelingErrors={levelingErrors}

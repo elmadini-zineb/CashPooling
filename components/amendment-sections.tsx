@@ -17,6 +17,9 @@ interface AmendmentSectionsProps {
   modifyDebitCoverage: boolean
   modifySecondaryAccounts: boolean
   modifyIntermediateAccounts: boolean
+  modifyEndDate: boolean
+  newEndDate: Date
+  onEndDateChange: (date: Date) => void
   levelingModes: any
   onLevelingChange: (modes: any) => void
   levelingErrors: any
@@ -37,6 +40,9 @@ export function AmendmentSections({
   modifyDebitCoverage,
   modifySecondaryAccounts,
   modifyIntermediateAccounts,
+  modifyEndDate,
+  newEndDate,
+  onEndDateChange,
   levelingModes,
   onLevelingChange,
   levelingErrors,
@@ -707,6 +713,59 @@ export function AmendmentSections({
           </div>
         </CollapsibleSection>
       )}
-    </div>
-  )
-}
+
+      {/* End Date Section */}
+      {modifyEndDate && (
+        <CollapsibleSection title="Date de fin de la convention" icon="📅">
+          <div className="space-y-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                La date de fin de la convention sera modifiée à partir de la date effective de l&apos;avenant.
+              </AlertDescription>
+            </Alert>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Current End Date */}
+              <div>
+                <Label className="text-sm font-medium">Date actuelle</Label>
+                <div className="mt-2 p-3 bg-slate-100 rounded-lg">
+                  <p className="text-sm font-semibold">
+                    {contract.endDate.toLocaleDateString("fr-FR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* New End Date */}
+              <div>
+                <Label htmlFor="end-date" className="text-sm font-medium">
+                  Nouvelle date
+                </Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  value={newEndDate instanceof Date ? newEndDate.toISOString().split("T")[0] : ""}
+                  onChange={(e) => onEndDateChange(new Date(e.target.value))}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+
+            {/* Comparison Badge */}
+            {newEndDate !== contract.endDate && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                <Badge variant="outline" className="bg-green-100 text-green-800">
+                  +{Math.ceil((new Date(newEndDate).getTime() - contract.endDate.getTime()) / (1000 * 60 * 60 * 24))} jours
+                </Badge>
+                <p className="text-sm text-green-700">
+                  Durée supplémentaire
+                </p>
+              </div>
+            )}
+          </div>
+        </CollapsibleSection>
+      )}

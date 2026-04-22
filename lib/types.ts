@@ -328,6 +328,7 @@ export interface Amendment {
   modifyDebitCoverage: boolean
   modifySecondaryAccounts: boolean
   modifyIntermediateAccounts: boolean
+  modifyEndDate: boolean
   
   // Pricing modifications
   previousPricingConfig: PricingConfig
@@ -358,6 +359,12 @@ export interface Amendment {
   intermediateAccountsChanges?: {
     accountsToAdd: Account[]
     accountsToRemove: string[] // IDs
+  }
+  
+  // End date modifications (if applicable)
+  endDateChanges?: {
+    oldEndDate: Date
+    newEndDate: Date
   }
   
   pdfUrl?: string
