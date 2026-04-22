@@ -6,9 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { updateAmendmentStatus, addAuditLog } from "@/lib/mock-data"
+import { updateAmendmentStatus, addAuditLog, signAmendment, rejectAmendment } from "@/lib/mock-data"
 import type { Amendment, CashPoolingContract } from "@/lib/types"
-import { signAmendment, rejectAmendment, addAuditLog } from "@/lib/mock-data"
 import { ChevronLeft, CheckCircle2, XCircle, Clock } from "lucide-react"
 
 interface AmendmentTrackingProps {
