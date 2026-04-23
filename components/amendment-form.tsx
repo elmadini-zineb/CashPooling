@@ -254,6 +254,12 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
         updatedAt: new Date(),
       }
 
+      const currentLevelingModes = {
+        casablanca: { oldMode: "ZBA", newMode: levelingModes.casablanca.mode },
+        rabat: { oldMode: "TBA", newMode: levelingModes.rabat.mode },
+        tanger: { oldMode: "FBA", newMode: levelingModes.tanger.mode },
+      }
+
       const newAmendment: Amendment = {
         id: `amendment-${Date.now()}`,
         conventionId: contract.id,
@@ -271,7 +277,7 @@ export function AmendmentForm({ contract }: AmendmentFormProps) {
         modifyPricing: false,
         previousPricingConfig: contract.pricingConfig || newPricingConfig,
         newPricingConfig,
-        levelingChanges: modifyLeveling ? levelingModes : undefined,
+        levelingChanges: modifyLeveling ? currentLevelingModes : undefined,
         debitCoverageChanges: modifyDebitCoverage
           ? {
               oldMode: "full",
