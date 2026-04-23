@@ -97,6 +97,7 @@ export interface CashPoolingContract {
   createdBy: string
   createdAt: Date
   updatedAt: Date
+  endDate: Date // Contract end date
   poolingConfig?: PoolingConfiguration
   investmentConfig?: InvestmentConfig // Added investment config to contract
   notionalConfig?: NotionalPoolingConfig // Added notional config to contract
@@ -107,6 +108,10 @@ export interface CashPoolingContract {
   periodicityExecutionTime?: string
   subscriberId?: string
   subscriberName?: string
+  // Audit fields
+  suspensionReason?: string // Reason for suspension
+  suspensionDate?: Date // Date when contract was suspended
+  terminationReason?: string // Reason for termination
 }
 
 export type PoolingMode = "ZBA" | "TBA" | "FBA"
@@ -235,8 +240,23 @@ export interface AuditLogEntry {
   entityId: string
   action: string
   userEmail: string
+  userName?: string // Full name of the user
+  userRole?: UserRole // Role of the user
   details: Record<string, any>
   createdAt: Date
+  approvedBy?: string // Email of approver (for sensitive actions)
+  approverRole?: UserRole
+  linkedEventId?: string // Link to related events (e.g., suspension/lift pair)
+  changesSummary?: string // Short summary of changes
+}
+
+export type AuditEventType = "creation" | "modification" | "activation" | "suspension" | "lift_suspension" | "termination"
+
+export interface ContractAuditEvent extends AuditLogEntry {
+  eventType: AuditEventType
+  previousValues?: Record<string, any>
+  newValues?: Record<string, any>
+  changedFields?: string[]
 }
 
 export type AccountRole = "centralizer" | "intermediate" | "secondary"

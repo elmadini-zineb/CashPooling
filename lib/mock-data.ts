@@ -657,6 +657,120 @@ export async function generatePDF(amendment: Amendment, contract: CashPoolingCon
   }
 }
 
+// Contract action functions with audit logging
+
+export function suspendContract(contractId: string, reason: string, userEmail: string, userName: string, userRole: any): string {
+  const contract = globalContracts.find((c) => c.id === contractId)
+  if (!contract) throw new Error("Contract not found")
+
+  const suspensionId = `suspend-${Date.now()}`
+  contract.status = "suspended"
+  contract.suspensionReason = reason
+  contract.suspensionDate = new Date()
+
+  addAuditLog({
+    id: suspensionId,
+    entityType: "contract",
+    entityId: contractId,
+    action: `Convention ${contract.contractNumber} suspendue`,
+    userEmail,
+    userName,
+    userRole,
+    details: { reason, contractNumber: contract.contractNumber, clientName: contract.clientName },
+    createdAt: new Date(),
+    changesSummary: `Statut: Actif → Suspendue`,
+  })
+
+  return suspensionId
+}
+
+export function liftSuspension(contractId: string, userEmail: string, userName: string, userRole: any, linkedEventId?: string): string {
+  const contract = globalContracts.find((c) => c.id === contractId)
+  if (!contract) throw new Error("Contract not found")
+
+  const liftId = `lift-${Date.now()}`
+  contract.status = "active"
+  contract.suspensionReason = undefined
+  contract.suspensionDate = undefined
+
+  addAuditLog({
+    id: liftId,
+    entityType: "contract",
+    entityId: contractId,
+    action: `Levée de suspension de la convention ${contract.contractNumber}`,
+    userEmail,
+    userName,
+    userRole,
+    details: { contractNumber: contract.contractNumber, clientName: contract.clientName },
+    createdAt: new Date(),
+    linkedEventId,
+    changesSummary: `Statut: Suspendue → Actif`,
+  })
+
+  return liftId
+}
+
+export function terminateContract(contractId: string, endDate: Date, reason: string, userEmail: string, userName: string, userRole: any): void {
+  const contract = globalContracts.find((c) => c.id === contractId)
+  if (!contract) throw new Error("Contract not found")
+
+  contract.status = "terminated"
+  contract.endDate = endDate
+  contract.terminationReason = reason
+
+  addAuditLog({
+    id: `terminate-${Date.now()}`,
+    entityType: "contract",
+    entityId: contractId,
+    action: `Convention ${contract.contractNumber} terminée`,
+    userEmail,
+    userName,
+    userRole,
+    details: { endDate: endDate.toLocaleDateString("fr-FR"), reason, contractNumber: contract.contractNumber },
+    createdAt: new Date(),
+    changesSummary: `Statut: Actif → Terminée (${endDate.toLocaleDateString("fr-FR")})`,
+  })
+}
+
+export function logContractModification(
+  contractId: string,
+  previousValues: Record<string, any>,
+  newValues: Record<string, any>,
+  userEmail: string,
+  userName: string,
+  userRole: any
+): void {
+  const contract = globalContracts.find((c) => c.id === contractId)
+  if (!contract) throw new Error("Contract not found")
+
+  const changedFields = Object.keys(newValues).filter((key) => previousValues[key] !== newValues[key])
+
+  addAuditLog({
+    id: `modify-${Date.now()}`,
+    entityType: "contract",
+    entityId: contractId,
+    action: `Convention ${contract.contractNumber} modifiée`,
+    userEmail,
+    userName,
+    userRole,
+    details: { changedFields, contractNumber: contract.contractNumber },
+    createdAt: new Date(),
+    changesSummary: `Modification de ${changedFields.length} champ(s): ${changedFields.join(", ")}`,
+  })
+}
+
+export function getAuditLogsByDateRange(startDate: Date, endDate: Date): AuditLogEntry[] {
+  return globalAuditLogs.filter((log) => log.createdAt >= startDate && log.createdAt <= endDate)
+}
+
+export function getAuditLogsByEventType(eventType: string): AuditLogEntry[] {
+  return globalAuditLogs.filter((log) => log.details.eventType === eventType || log.action.includes(eventType))
+}
+
+export function getAuditLogsByUser(userEmail: string): AuditLogEntry[] {
+  return globalAuditLogs.filter((log) => log.userEmail === userEmail)
+}
+
 // Initialize with sample amendments and audit logs
 export function initializeSampleData(): void {
   // Clear existing data
@@ -679,6 +793,7 @@ export function initializeSampleData(): void {
       createdBy: "adria@admin.com",
       createdAt: new Date("2026-01-15"),
       updatedAt: new Date("2026-01-15"),
+      endDate: new Date("2027-01-15"),
       poolingConfig: {
         mode: "TBA",
         scheduling: { frequency: "monthly" },
@@ -706,6 +821,9 @@ export function initializeSampleData(): void {
       createdBy: "adria@admin.com",
       createdAt: new Date("2026-02-02"),
       updatedAt: new Date("2026-02-02"),
+      endDate: new Date("2027-02-02"),
+      suspensionReason: "Non-respect des obligations contractuelles",
+      suspensionDate: new Date("2026-03-01"),
       poolingConfig: {
         mode: "FBA",
         scheduling: { frequency: "monthly" },
@@ -734,6 +852,7 @@ export function initializeSampleData(): void {
       createdBy: "adria@admin.com",
       createdAt: new Date("2025-11-10"),
       updatedAt: new Date("2025-11-10"),
+      endDate: new Date("2026-11-10"),
       poolingConfig: {
         mode: "ZBA",
         scheduling: { frequency: "monthly" },
@@ -830,14 +949,80 @@ export function initializeSampleData(): void {
 
   // Create sample audit logs
   const sampleAuditLogs: AuditLogEntry[] = [
+    // Contract 1 logs
+    {
+      id: "audit-contract-1-creation",
+      entityType: "contract",
+      entityId: "contract-1",
+      action: "Convention CP-2026-001 créée",
+      userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
+      details: { clientName: "Groupe Vortex Global" },
+      createdAt: new Date("2026-01-15"),
+      changesSummary: "Création de la convention",
+    },
+    {
+      id: "audit-contract-1-activation",
+      entityType: "contract",
+      entityId: "contract-1",
+      action: "Convention CP-2026-001 activée",
+      userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
+      details: { status: "active" },
+      createdAt: new Date("2026-01-16"),
+      changesSummary: "Statut: Brouillon → Actif",
+    },
+    // Contract 2 logs (suspended)
+    {
+      id: "audit-contract-2-creation",
+      entityType: "contract",
+      entityId: "contract-2",
+      action: "Convention CP-2026-002 créée",
+      userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
+      details: { clientName: "Groupe Stellium Dynamics" },
+      createdAt: new Date("2026-02-02"),
+      changesSummary: "Création de la convention",
+    },
+    {
+      id: "audit-contract-2-activation",
+      entityType: "contract",
+      entityId: "contract-2",
+      action: "Convention CP-2026-002 activée",
+      userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
+      details: { status: "active" },
+      createdAt: new Date("2026-02-03"),
+      changesSummary: "Statut: Brouillon → Actif",
+    },
+    {
+      id: "audit-contract-2-suspension",
+      entityType: "contract",
+      entityId: "contract-2",
+      action: "Convention CP-2026-002 suspendue",
+      userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
+      details: { reason: "Non-respect des obligations contractuelles" },
+      createdAt: new Date("2026-03-01"),
+      changesSummary: "Statut: Actif → Suspendue",
+    },
+    // Amendment logs
     {
       id: "audit-1",
       entityType: "amendment",
       entityId: "amendment-1",
       action: "Avenant AVN-CP2025018-001 généré",
       userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
       details: { subject: "Modification des paramètres de tarification" },
       createdAt: new Date("2026-03-19"),
+      changesSummary: "Avenant en attente de signature",
     },
     {
       id: "audit-2",
@@ -845,8 +1030,11 @@ export function initializeSampleData(): void {
       entityId: "contract-3",
       action: "Consultation de la convention",
       userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
       details: {},
       createdAt: new Date("2026-03-19"),
+      changesSummary: "Consultation de la convention",
     },
     {
       id: "audit-3",
@@ -854,8 +1042,11 @@ export function initializeSampleData(): void {
       entityId: "amendment-2",
       action: "Avenant AVN-CP2025018-000 activé après signature",
       userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
       details: { signedAt: new Date("2026-02-12") },
       createdAt: new Date("2026-02-12"),
+      changesSummary: "Avenant signé et activé",
     },
     {
       id: "audit-4",
@@ -863,8 +1054,11 @@ export function initializeSampleData(): void {
       entityId: "amendment-2",
       action: "Avenant AVN-CP2025018-000 généré",
       userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
       details: { subject: "Modification tarification" },
       createdAt: new Date("2026-02-10"),
+      changesSummary: "Avenant en attente de signature",
     },
     {
       id: "audit-5",
@@ -872,8 +1066,11 @@ export function initializeSampleData(): void {
       entityId: "contract-3",
       action: "Convention CP-2025-018 créée",
       userEmail: "adria@admin.com",
+      userName: "Adria Manager",
+      userRole: "Chargé de clientèle",
       details: { clientName: "Groupe Catalyst Ventures" },
       createdAt: new Date("2025-11-10"),
+      changesSummary: "Création de la convention",
     },
   ]
 

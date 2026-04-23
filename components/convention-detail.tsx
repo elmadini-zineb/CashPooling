@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { CashPoolingContract } from "@/lib/types"
 import { getAmendmentsByConvention } from "@/lib/mock-data"
-import { ChevronLeft, FileText, Plus, AlertCircle } from "lucide-react"
+import { ChevronLeft, FileText, Plus, AlertCircle, History } from "lucide-react"
+import { ContractActions } from "./contract-actions"
 
 interface ConventionDetailViewProps {
   contract: CashPoolingContract
@@ -345,6 +346,9 @@ export function ConventionDetailView({ contract }: ConventionDetailViewProps) {
         </Card>
       )}
 
+      {/* Contract Actions */}
+      <ContractActions contract={contract} onActionComplete={() => window.location.reload()} />
+
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4">
         {!pendingAmendment && contract.status === "active" && (
@@ -363,6 +367,14 @@ export function ConventionDetailView({ contract }: ConventionDetailViewProps) {
         >
           <FileText className="h-4 w-4" />
           Voir les documents
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/conventions/${contract.id}/audit`)}
+          className="gap-2"
+        >
+          <History className="h-4 w-4" />
+          Piste d'audit
         </Button>
       </div>
     </div>
