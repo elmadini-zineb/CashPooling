@@ -329,6 +329,20 @@ export const mockUser = mockUsers[0]
 
 export function addContract(contract: CashPoolingContract): void {
   globalContracts.push(contract)
+  
+  // Log the contract creation
+  addAuditLog({
+    id: `audit-create-${Date.now()}`,
+    entityType: "contract",
+    entityId: contract.id,
+    action: `Convention ${contract.contractNumber} créée`,
+    userEmail: contract.createdBy,
+    userName: "Chargé de clientèle",
+    userRole: "Chargé de clientèle",
+    details: { clientName: contract.clientName, contractNumber: contract.contractNumber },
+    createdAt: new Date(),
+    changesSummary: "Création de la convention",
+  })
 }
 
 export function getAllContracts(): CashPoolingContract[] {
@@ -341,8 +355,30 @@ export function updateContractStatus(
 ): boolean {
   const contract = globalContracts.find((c) => c.id === contractId)
   if (contract) {
+    const oldStatus = contract.status
     contract.status = newStatus
-    contract.updatedAt = new Date()
+
+    // Log the status change
+    const statusMap: Record<string, string> = {
+      active: "Actif",
+      suspended: "Suspendue",
+      terminated: "Terminée",
+      registered: "Enregistrée",
+    }
+
+    addAuditLog({
+      id: `audit-status-${Date.now()}`,
+      entityType: "contract",
+      entityId: contractId,
+      action: `Convention ${contract.contractNumber} - Statut modifié en ${statusMap[newStatus]}`,
+      userEmail: "adria@admin.com",
+      userName: "Chargé de clientèle",
+      userRole: "Chargé de clientèle",
+      details: { oldStatus, newStatus, contractNumber: contract.contractNumber },
+      createdAt: new Date(),
+      changesSummary: `Statut: ${statusMap[oldStatus]} → ${statusMap[newStatus]}`,
+    })
+
     return true
   }
   return false
@@ -538,6 +574,20 @@ export function generateAmendmentNumber(conventionReference: string, existingAme
 
 export function addAmendment(amendment: Amendment): void {
   globalAmendments.push(amendment)
+  
+  // Log the amendment creation
+  addAuditLog({
+    id: `audit-amendment-${Date.now()}`,
+    entityType: "amendment",
+    entityId: amendment.id,
+    action: `Avenant ${amendment.amendmentNumber} généré et en attente de signature`,
+    userEmail: amendment.createdBy,
+    userName: "Chargé de clientèle",
+    userRole: "Chargé de clientèle",
+    details: { subject: amendment.subject, reason: amendment.reason, conventionReference: amendment.conventionReference },
+    createdAt: new Date(),
+    changesSummary: `Avenant en attente de signature`,
+  })
 }
 
 export function getAllAmendments(): Amendment[] {
@@ -567,6 +617,21 @@ export function signAmendment(amendmentId: string, signedBy: string): boolean {
     amendment.status = "signed"
     amendment.signedAt = new Date()
     amendment.signedBy = signedBy
+    
+    // Log the amendment signature
+    addAuditLog({
+      id: `audit-sign-${Date.now()}`,
+      entityType: "amendment",
+      entityId: amendment.id,
+      action: `Avenant ${amendment.amendmentNumber} signé et activé`,
+      userEmail: signedBy,
+      userName: "Client",
+      userRole: "Client",
+      details: { amendmentNumber: amendment.amendmentNumber, conventionReference: amendment.conventionReference },
+      createdAt: new Date(),
+      changesSummary: `Avenant signé - Statut: En attente → Activé`,
+    })
+    
     return true
   }
   return false
@@ -577,6 +642,21 @@ export function rejectAmendment(amendmentId: string, rejectionReason: string): b
   if (amendment) {
     amendment.status = "rejected"
     amendment.rejectionReason = rejectionReason
+    
+    // Log the amendment rejection
+    addAuditLog({
+      id: `audit-reject-${Date.now()}`,
+      entityType: "amendment",
+      entityId: amendment.id,
+      action: `Avenant ${amendment.amendmentNumber} rejeté`,
+      userEmail: "adria@admin.com",
+      userName: "Client",
+      userRole: "Client",
+      details: { rejectionReason, amendmentNumber: amendment.amendmentNumber, conventionReference: amendment.conventionReference },
+      createdAt: new Date(),
+      changesSummary: `Avenant rejeté - Motif: ${rejectionReason}`,
+    })
+    
     return true
   }
   return false
