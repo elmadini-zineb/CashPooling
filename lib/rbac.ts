@@ -13,6 +13,8 @@ export type Permission =
 
 const rolePermissions: Record<UserRole, Permission[]> = {
   "Chargé de clientèle": [
+    "view_pricing",
+    "manage_pricing",
     "view_contracts",
     "manage_contracts",
     "view_amendments",
