@@ -308,6 +308,11 @@ export interface PricingConfig {
   hybridLeveledAmountRate?: number
   variableTriggerThreshold?: number
   hybridSecondaryAccountFees?: number
+  // Tarification (Lot 2 feature)
+  pricingCodeType?: "reporting" | "transactional" | "combined" // Code tarif
+  preferentialRate?: number // Tarif préférentiel en DH
+  hasPreferentialRate?: boolean // Toggle pour tarif préférentiel
+  radical?: string // Radical from CIH
 }
 
 export type AmendmentStatus = "draft" | "generated" | "pending_signature" | "signed" | "active" | "rejected"
