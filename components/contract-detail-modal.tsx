@@ -56,33 +56,33 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[98vw] h-[98vh] max-w-none max-h-none overflow-y-auto p-6">
-          <DialogHeader className="pb-4 border-b">
+        <DialogContent className="fixed inset-0 w-screen h-screen max-w-none max-h-none overflow-auto p-8 rounded-none bg-white z-50">
+          <DialogHeader className="pb-6 border-b mb-6">
             <div className="flex items-start justify-between">
               <div>
-                <DialogTitle className="text-2xl">{contract.contractNumber}</DialogTitle>
-                <p className="text-sm text-slate-500 mt-1">{contract.clientName}</p>
+                <DialogTitle className="text-4xl font-bold">{contract.contractNumber}</DialogTitle>
+                <p className="text-lg text-slate-500 mt-2">{contract.clientName}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
+              <Button variant="ghost" size="lg" onClick={onClose} className="h-10 w-10">
+                <X className="h-6 w-6" />
               </Button>
             </div>
-            <div className="flex items-center gap-3 mt-3">
-              <Badge className={getStatusColor(contract.status)}>
+            <div className="flex items-center gap-4 mt-4">
+              <Badge className={`${getStatusColor(contract.status)} text-base px-4 py-2`}>
                 {getStatusLabel(contract.status)}
               </Badge>
-              <span className="text-sm text-slate-600">{contract.currency}</span>
-              <span className="text-sm text-slate-600">Créé le {new Date(contract.createdAt).toLocaleDateString('fr-FR')}</span>
+              <span className="text-base text-slate-600">{contract.currency}</span>
+              <span className="text-base text-slate-600">Créé le {new Date(contract.createdAt).toLocaleDateString('fr-FR')}</span>
             </div>
           </DialogHeader>
 
           {/* Tabs for different views */}
-          <Tabs defaultValue="details" className="mt-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="details">Détails du contrat</TabsTrigger>
-              <TabsTrigger value="amendments">Avenants ({amendments.length})</TabsTrigger>
-              <TabsTrigger value="audit">Piste d'audit</TabsTrigger>
-              <TabsTrigger value="simulation">Historique simulation</TabsTrigger>
+          <Tabs defaultValue="details" className="mt-8">
+            <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsTrigger value="details" className="text-base">Détails du contrat</TabsTrigger>
+              <TabsTrigger value="amendments" className="text-base">Avenants ({amendments.length})</TabsTrigger>
+              <TabsTrigger value="audit" className="text-base">Piste d'audit</TabsTrigger>
+              <TabsTrigger value="simulation" className="text-base">Historique simulation</TabsTrigger>
             </TabsList>
 
             {/* Détails du contrat */}
