@@ -10,7 +10,7 @@ import { X } from 'lucide-react'
 import type { CashPoolingContract } from '@/lib/types'
 import { ContractPreview } from './contract-preview'
 import { AuditTrailModal } from './audit-trail-modal'
-import { getAuditLogsByEntity } from '@/lib/mock-data'
+import { getAuditLogsByEntity, getAmendmentsByConvention } from '@/lib/mock-data'
 
 interface ContractDetailModalProps {
   contract: CashPoolingContract | null
@@ -27,6 +27,9 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
   // Get audit logs for this contract
   const auditLogs = getAuditLogsByEntity('contract', contract.id)
   const recentLogs = auditLogs.slice(0, 5) // Show last 5 events
+  
+  // Get amendments for this contract
+  const amendments = getAmendmentsByConvention(contract.id)
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -75,8 +78,9 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
 
           {/* Tabs for different views */}
           <Tabs defaultValue="details" className="mt-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details">Détails du contrat</TabsTrigger>
+              <TabsTrigger value="amendments">Avenants ({amendments.length})</TabsTrigger>
               <TabsTrigger value="audit">Piste d'audit</TabsTrigger>
               <TabsTrigger value="simulation">Historique simulation</TabsTrigger>
             </TabsList>
@@ -84,6 +88,84 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
             {/* Détails du contrat */}
             <TabsContent value="details" className="mt-6">
               <ContractPreview contract={contract} user={user} />
+            </TabsContent>
+
+            {/* Historique des avenants */}
+            <TabsContent value="amendments" className="mt-6">
+              <div className="space-y-4">
+                {amendments.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-8 text-center text-slate-500">
+                      Aucun avenant associé à ce contrat
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {amendments.map((amendment) => (
+                      <Card key={amendment.id}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="text-base">{amendment.amendmentNumber}</CardTitle>
+                              <CardDescription className="mt-1">{amendment.subject}</CardDescription>
+                            </div>
+                            <Badge variant={amendment.status === 'signed' ? 'default' : 'secondary'}>
+                              {amendment.status === 'signed' && 'Signé'}
+                              {amendment.status === 'pending_signature' && 'En attente de signature'}
+                              {amendment.status === 'rejected' && 'Rejeté'}
+                              {amendment.status === 'draft' && 'Brouillon'}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-slate-600">Motif:</p>
+                              <p className="font-medium">{amendment.reason}</p>
+                            </div>
+                            <div>
+                              <p className="text-slate-600">Date effective:</p>
+                              <p className="font-medium">{new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
+                            </div>
+                            {amendment.createdAt && (
+                              <div>
+                                <p className="text-slate-600">Créé le:</p>
+                                <p className="font-medium">{new Date(amendment.createdAt).toLocaleDateString('fr-FR')}</p>
+                              </div>
+                            )}
+                            {amendment.signedAt && (
+                              <div>
+                                <p className="text-slate-600">Signé le:</p>
+                                <p className="font-medium">{new Date(amendment.signedAt).toLocaleDateString('fr-FR')}</p>
+                              </div>
+                            )}
+                          </div>
+                          {amendment.modifyLeveling && (
+                            <div className="mt-3 pt-3 border-t text-xs">
+                              <p className="text-slate-600">Modifications: Nivellement</p>
+                            </div>
+                          )}
+                          {amendment.modifyDebitCoverage && (
+                            <div className="text-xs">
+                              <p className="text-slate-600">Modifications: Couverture débitrice</p>
+                            </div>
+                          )}
+                          {amendment.modifySecondaryAccounts && (
+                            <div className="text-xs">
+                              <p className="text-slate-600">Modifications: Comptes secondaires</p>
+                            </div>
+                          )}
+                          {amendment.modifyIntermediateAccounts && (
+                            <div className="text-xs">
+                              <p className="text-slate-600">Modifications: Comptes intermédiaires</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             </TabsContent>
 
             {/* Piste d'audit */}
