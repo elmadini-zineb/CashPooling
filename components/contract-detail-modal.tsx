@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { X, Eye, Edit2, Download } from 'lucide-react'
+import { X, Eye, Edit2, Download, CheckCircle2 } from 'lucide-react'
 import type { CashPoolingContract, Amendment } from '@/lib/types'
 import { ContractPreview } from './contract-preview'
 import { AuditTrailModal } from './audit-trail-modal'
@@ -23,6 +23,8 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
   const [selectedAmendment, setSelectedAmendment] = useState<Amendment | null>(null)
   const [isAmendmentDetailOpen, setIsAmendmentDetailOpen] = useState(false)
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false)
+  const [amendmentToSign, setAmendmentToSign] = useState<Amendment | null>(null)
 
   if (!contract) return null
 
@@ -281,6 +283,22 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                                       </Button>
                                     )}
 
+                                    {/* Marquer comme signé */}
+                                    {amendment.status === 'pending_signature' && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 hover:bg-green-100"
+                                        title="Marquer comme signé"
+                                        onClick={() => {
+                                          setAmendmentToSign(amendment)
+                                          setIsSignatureModalOpen(true)
+                                        }}
+                                      >
+                                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                      </Button>
+                                    )}
+
                                     {/* Télécharger */}
                                     <Button
                                       variant="ghost"
@@ -385,6 +403,82 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
             isOpen={isAuditModalOpen}
             onClose={() => setIsAuditModalOpen(false)}
           />
+
+          {/* Signature Confirmation Modal */}
+          {amendmentToSign && isSignatureModalOpen && (
+            <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg w-full max-w-md">
+                {/* Header */}
+                <div className="border-b p-6 flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">Marquer comme signé</h2>
+                    <p className="text-slate-600 mt-1 text-sm">Avenant {amendmentToSign.amendmentNumber}</p>
+                  </div>
+                  <button
+                    onClick={() => setIsSignatureModalOpen(false)}
+                    className="h-8 w-8 rounded hover:bg-slate-100 flex items-center justify-center"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-900">
+                      Cet avenant sera marqué comme signé. Cette action est définitive et enregistrée dans la piste d'audit.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700 mb-2">Date de signature</p>
+                      <p className="text-sm text-slate-600 p-3 bg-slate-50 rounded">
+                        {new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR')}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700 mb-2">Signé par</p>
+                      <p className="text-sm text-slate-600 p-3 bg-slate-50 rounded">
+                        {user?.name || user?.email || 'Utilisateur courant'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <p className="text-xs text-amber-900 font-semibold mb-1">Important</p>
+                    <p className="text-xs text-amber-800">
+                      Vous confirmez que vous êtes autorisé à signer cet avenant et que toutes les informations sont correctes.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t p-6 flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsSignatureModalOpen(false)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    className="gap-2 bg-green-600 hover:bg-green-700"
+                    onClick={() => {
+                      // In a real app, this would update the amendment status in the database
+                      console.log('[v0] Amendment signed:', amendmentToSign.id)
+                      setIsSignatureModalOpen(false)
+                      setAmendmentToSign(null)
+                      // You could refresh the amendments list here
+                    }}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    Confirmer la signature
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Amendment Detail Modal */}
           {selectedAmendment && isAmendmentDetailOpen && (
