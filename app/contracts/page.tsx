@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ArrowLeft, Search, Eye, Download, Filter, Settings } from "lucide-react"
+import { ArrowLeft, Search, Eye, Download, Filter, Settings, Plus, Zap } from "lucide-react"
 import { getAllContracts } from "@/lib/mock-data"
 import type { CashPoolingContract, SimulationParameters } from "@/lib/types"
 import { ContractPreview } from "@/components/contract-preview"
@@ -16,6 +16,7 @@ import { PDFGenerator } from "@/lib/pdf-generator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ContractSettingsDialog } from "@/components/contract-settings-dialog"
 import { ContractSimulationDialog } from "@/components/contract-simulation-dialog"
+import { ContractDetailModal } from "@/components/contract-detail-modal"
 
 export default function ContractsPage() {
   const router = useRouter()
@@ -30,6 +31,8 @@ export default function ContractsPage() {
   const [simulationContract, setSimulationContract] = useState<CashPoolingContract | null>(null)
   const [isSimulationOpen, setIsSimulationOpen] = useState(false)
   const [simulationPreset, setSimulationPreset] = useState<SimulationParameters | null>(null)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [detailContract, setDetailContract] = useState<CashPoolingContract | null>(null)
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user")
@@ -223,7 +226,7 @@ export default function ContractsPage() {
                     <TableHead>Comptes secondaires</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Date création</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right w-48">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -253,48 +256,62 @@ export default function ContractsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
+                            {/* Visualiser - Eye icon */}
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleOpenSettings(contract)}
-                              className="gap-1"
+                              onClick={() => {
+                                setDetailContract(contract)
+                                setIsDetailModalOpen(true)
+                              }}
+                              className="h-8 w-8 p-0 hover:bg-blue-100"
+                              title="Visualiser les détails"
                             >
-                              <Settings className="h-4 w-4" />
-                              Paramètres
+                              <Eye className="h-4 w-4 text-blue-600" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewContract(contract)}
-                              className="gap-1"
-                            >
-                              <Eye className="h-4 w-4" />
-                              Voir
-                            </Button>
+
+                            {/* Simulation - Zap icon */}
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleOpenSimulation(contract)}
-                              className="gap-1"
+                              className="h-8 w-8 p-0 hover:bg-purple-100"
+                              title="Simuler"
                             >
-                              Simuler
+                              <Zap className="h-4 w-4 text-purple-600" />
                             </Button>
+
+                            {/* Créer un avenant - Plus icon */}
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => router.push(`/simulation-history?contractId=${contract.id}`)}
-                              className="gap-1"
+                              onClick={() => router.push(`/conventions/${contract.id}/amendment`)}
+                              className="h-8 w-8 p-0 hover:bg-green-100"
+                              title="Créer un avenant"
                             >
-                              Historique
+                              <Plus className="h-4 w-4 text-green-600" />
                             </Button>
+
+                            {/* PDF - Download icon */}
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDownloadPDF(contract)}
-                              className="gap-1"
+                              className="h-8 w-8 p-0 hover:bg-red-100"
+                              title="Télécharger en PDF"
                             >
-                              <Download className="h-4 w-4" />
-                              PDF
+                              <Download className="h-4 w-4 text-red-600" />
+                            </Button>
+
+                            {/* Paramètres - Settings icon */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenSettings(contract)}
+                              className="h-8 w-8 p-0 hover:bg-slate-200"
+                              title="Paramètres"
+                            >
+                              <Settings className="h-4 w-4 text-slate-600" />
                             </Button>
                           </div>
                         </TableCell>
@@ -308,15 +325,13 @@ export default function ContractsPage() {
         </Card>
       </main>
 
-      {/* Contract Preview Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Détails du contrat {selectedContract?.contractNumber}</DialogTitle>
-          </DialogHeader>
-          {selectedContract && <ContractPreview contract={selectedContract} user={user} />}
-        </DialogContent>
-      </Dialog>
+      {/* Contract Detail Modal */}
+      <ContractDetailModal
+        contract={detailContract}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        user={user}
+      />
 
       <ContractSimulationDialog
         contract={simulationContract}
