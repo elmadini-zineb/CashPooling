@@ -65,6 +65,11 @@ export function AmendmentSections({
 
   const [newSecondaryAccount, setNewSecondaryAccount] = useState<string>("")
   const [newIntermediateAccount, setNewIntermediateAccount] = useState<string>("")
+  const [newAccountLevelingMode, setNewAccountLevelingMode] = useState<string>("ZBA")
+  const [newAccountDebitPriority, setNewAccountDebitPriority] = useState<boolean>(false)
+  const [newAccountDebitPriorityValue, setNewAccountDebitPriorityValue] = useState<string>("1")
+  const [newAccountDebitMinAmount, setNewAccountDebitMinAmount] = useState<string>("0")
+  const [newAccountIntermediateIds, setNewAccountIntermediateIds] = useState<string[]>([])
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({
@@ -521,16 +526,86 @@ export function AmendmentSections({
               )}
             </div>
 
-            {/* Ajouter des comptes */}
+            {/* Ajouter des comptes avec configuration */}
             <div className="border-t pt-4">
-              <p className="text-sm font-semibold text-slate-900 mb-2">Ajouter des comptes</p>
-              <div className="flex gap-2 mb-3">
-                <Input
-                  placeholder="Numéro de compte ou IBAN"
-                  value={newSecondaryAccount}
-                  onChange={(e) => setNewSecondaryAccount(e.target.value)}
-                  className="flex-1"
-                />
+              <p className="text-sm font-semibold text-slate-900 mb-3">Ajouter et configurer des comptes</p>
+              
+              {/* Form d'ajout */}
+              <div className="space-y-4 bg-slate-50 p-4 rounded-md mb-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Numéro de compte ou IBAN"
+                    value={newSecondaryAccount}
+                    onChange={(e) => setNewSecondaryAccount(e.target.value)}
+                  />
+                  <select
+                    value={newAccountLevelingMode}
+                    onChange={(e) => setNewAccountLevelingMode(e.target.value)}
+                    className="px-3 py-2 border border-slate-300 rounded-md bg-white"
+                  >
+                    <option value="ZBA">Mode ZBA</option>
+                    <option value="TBA">Mode TBA</option>
+                    <option value="FBA">Mode FBA</option>
+                  </select>
+                </div>
+
+                {/* Priorité débitrice */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newAccountDebitPriority}
+                      onChange={(e) => setNewAccountDebitPriority(e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm font-medium">Activer la priorité débitrice</span>
+                  </label>
+                  {newAccountDebitPriority && (
+                    <div className="ml-6 space-y-2">
+                      <Input
+                        type="number"
+                        placeholder="Priorité (1-10)"
+                        min="1"
+                        max="10"
+                        value={newAccountDebitPriorityValue}
+                        onChange={(e) => setNewAccountDebitPriorityValue(e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Montant minimum"
+                        value={newAccountDebitMinAmount}
+                        onChange={(e) => setNewAccountDebitMinAmount(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Comptes intermédiaires à rattacher */}
+                {allIntermediateAccounts.length > 0 && (
+                  <div className="space-y-2 border-t pt-3">
+                    <p className="text-sm font-medium text-slate-900">Rattacher à des comptes intermédiaires</p>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {allIntermediateAccounts.map((intermediateAccount) => (
+                        <label key={intermediateAccount.id} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={newAccountIntermediateIds.includes(intermediateAccount.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setNewAccountIntermediateIds([...newAccountIntermediateIds, intermediateAccount.id])
+                              } else {
+                                setNewAccountIntermediateIds(newAccountIntermediateIds.filter(id => id !== intermediateAccount.id))
+                              }
+                            }}
+                            className="w-4 h-4"
+                          />
+                          <span className="text-sm">{intermediateAccount.accountNumber} ({intermediateAccount.iban})</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   type="button"
                   onClick={() => {
@@ -547,38 +622,89 @@ export function AmendmentSections({
                         status: "active",
                         accountType: "secondary",
                         createdAt: new Date(),
+                        levelingMode: newAccountLevelingMode,
+                        debitPriority: newAccountDebitPriority ? Number(newAccountDebitPriorityValue) : undefined,
+                        debitMinAmount: newAccountDebitPriority ? Number(newAccountDebitMinAmount) : undefined,
+                        linkedIntermediateAccounts: newAccountIntermediateIds,
                       }
                       onAccountsChange([...accountsToAdd, newAccount], accountsToRemove)
                       setNewSecondaryAccount("")
+                      setNewAccountLevelingMode("ZBA")
+                      setNewAccountDebitPriority(false)
+                      setNewAccountDebitPriorityValue("1")
+                      setNewAccountDebitMinAmount("0")
+                      setNewAccountIntermediateIds([])
                     }
                   }}
-                  className="gap-2"
+                  className="w-full gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Ajouter
+                  Ajouter le compte avec configuration
                 </Button>
               </div>
+
+              {/* Afficher les comptes ajoutés avec leur configuration */}
               {accountsToAdd.length > 0 && (
-                <div className="space-y-2 bg-green-50 p-3 rounded-md">
+                <div className="space-y-3 bg-green-50 p-4 rounded-md">
+                  <p className="text-sm font-semibold text-slate-900">Comptes à ajouter</p>
                   {accountsToAdd.map((account) => (
-                    <div key={account.id} className="flex items-center gap-3 p-2 bg-white rounded border border-green-200">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
-                        <p className="text-xs text-slate-600">Nouveau compte</p>
+                    <div key={account.id} className="bg-white rounded border-2 border-green-200 p-3 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                          <p className="text-xs text-slate-600">Nouveau compte</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            onAccountsChange(
+                              accountsToAdd.filter(a => a.id !== account.id),
+                              accountsToRemove
+                            )
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                          onAccountsChange(
-                            accountsToAdd.filter(a => a.id !== account.id),
-                            accountsToRemove
-                          )
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                      {/* Configuration du compte */}
+                      <div className="grid grid-cols-3 gap-3 p-3 bg-slate-50 rounded border border-slate-200 text-xs">
+                        <div>
+                          <p className="text-slate-600">Mode de nivellement</p>
+                          <p className="font-semibold text-slate-900">{account.levelingMode || "ZBA"}</p>
+                        </div>
+                        <div>
+                          <p className="text-slate-600">Priorité débitrice</p>
+                          <p className="font-semibold text-slate-900">
+                            {account.debitPriority ? `P${account.debitPriority}` : "Aucune"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-slate-600">Montant minimum</p>
+                          <p className="font-semibold text-slate-900">
+                            {account.debitMinAmount ? `${account.debitMinAmount} DH` : "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Comptes intermédiaires rattachés */}
+                      {account.linkedIntermediateAccounts && account.linkedIntermediateAccounts.length > 0 && (
+                        <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                          <p className="text-xs font-medium text-slate-900 mb-1">Rattaché à:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {account.linkedIntermediateAccounts.map((intermediateId) => {
+                              const intermediateAccount = allIntermediateAccounts.find(a => a.id === intermediateId)
+                              return (
+                                <span key={intermediateId} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  {intermediateAccount?.accountNumber}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

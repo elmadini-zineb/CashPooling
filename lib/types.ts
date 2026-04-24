@@ -26,6 +26,11 @@ export interface Account {
   createdAt: Date
   parentAccountId?: string // ID of the parent account (e.g., holding company)
   linkedAccountIds?: string[] // IDs of related accounts (e.g., subsidiaries)
+  // Amendment configuration fields
+  levelingMode?: string // ZBA, TBA, FBA
+  debitPriority?: number // Priority for debit coverage (1-10)
+  debitMinAmount?: number // Minimum amount for debit priority
+  linkedIntermediateAccounts?: string[] // IDs of intermediate accounts linked to this account
 }
 
 export interface OPCVMFund {
