@@ -86,7 +86,6 @@ export function UnifiedSubscriptionFlow({ user }: UnifiedSubscriptionFlowProps) 
     validatedHierarchy: HierarchicalAccount,
     validatedInvestmentConfig: InvestmentConfig | null,
     validatedNotionalConfig: NotionalPoolingConfig | null,
-    validatedPricingAccountId?: string,
     periodicity?: {
       periodicityType: PeriodicityType
       frequency?: number
@@ -97,9 +96,6 @@ export function UnifiedSubscriptionFlow({ user }: UnifiedSubscriptionFlowProps) 
     setHierarchy(validatedHierarchy)
     setInvestmentConfig(validatedInvestmentConfig)
     setNotionalConfig(validatedNotionalConfig)
-    if (validatedPricingAccountId) {
-      setPricingAccountId(validatedPricingAccountId)
-    }
     if (periodicity) {
       setContractPeriodicity(periodicity)
     }
@@ -117,8 +113,9 @@ export function UnifiedSubscriptionFlow({ user }: UnifiedSubscriptionFlowProps) 
     }
   }
 
-  const handlePricingComplete = (config: PricingConfig) => {
+  const handlePricingComplete = (config: PricingConfig, accountId: string) => {
     setPricingConfig(config)
+    setPricingAccountId(accountId)
     setCurrentStep("validation")
   }
 
@@ -233,12 +230,19 @@ export function UnifiedSubscriptionFlow({ user }: UnifiedSubscriptionFlowProps) 
           initialHierarchy={hierarchy}
           initialInvestmentConfig={investmentConfig}
           initialNotionalConfig={notionalConfig}
-          initialPricingAccountId={pricingAccountId}
         />
       )}
 
-      {currentStep === "pricing" && hierarchy && (
-        <StepPricing hierarchy={hierarchy} onComplete={handlePricingComplete} onBack={handleBack} initialConfig={pricingConfig} />
+      {currentStep === "pricing" && hierarchy && centralizerAccount && (
+        <StepPricing
+          hierarchy={hierarchy}
+          accounts={mockAccounts}
+          centralizerAccount={centralizerAccount}
+          onComplete={handlePricingComplete}
+          onBack={handleBack}
+          initialConfig={pricingConfig}
+          initialPricingAccountId={pricingAccountId}
+        />
       )}
 
       {currentStep === "validation" && centralizerAccount && hierarchy && (

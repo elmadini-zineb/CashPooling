@@ -18,7 +18,6 @@ interface StepStructureProps {
     hierarchy: HierarchicalAccount,
     investmentConfig: InvestmentConfig | null,
     notionalConfig: NotionalPoolingConfig | null,
-    pricingAccountId?: string,
     periodicity?: {
       periodicityType: PeriodicityType
       frequency?: number
@@ -39,7 +38,6 @@ interface StepStructureProps {
   initialHierarchy: HierarchicalAccount | null
   initialInvestmentConfig: InvestmentConfig | null
   initialNotionalConfig: NotionalPoolingConfig | null
-  initialPricingAccountId?: string
 }
 
 export function StepStructure({
@@ -48,12 +46,10 @@ export function StepStructure({
   onComplete,
   onBack,
   initialInvestmentConfig,
-  initialPricingAccountId,
 }: StepStructureProps) {
   const [localHierarchy, setLocalHierarchy] = useState<HierarchicalAccount | null>(null)
   const [localInvestmentConfig, setLocalInvestmentConfig] = useState<InvestmentConfig | null>(initialInvestmentConfig)
   const [localNotionalConfig, setLocalNotionalConfig] = useState<NotionalPoolingConfig | null>(null)
-  const [localPricingAccountId, setLocalPricingAccountId] = useState<string | undefined>(initialPricingAccountId || centralizerAccount.id)
   const [localPeriodicity, setLocalPeriodicity] = useState<{
     periodicityType: PeriodicityType
     frequency?: number
@@ -141,8 +137,8 @@ export function StepStructure({
 
     setPeriodicityError(null)
 
-    if (localHierarchy && localPricingAccountId) {
-      onComplete(localHierarchy, localInvestmentConfig, localNotionalConfig, localPricingAccountId, localPeriodicity)
+    if (localHierarchy) {
+      onComplete(localHierarchy, localInvestmentConfig, localNotionalConfig, localPeriodicity)
     }
   }
 

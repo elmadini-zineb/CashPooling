@@ -8,14 +8,17 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { HierarchicalAccount, PricingConfig } from "@/lib/types"
+import type { HierarchicalAccount, PricingConfig, Account } from "@/lib/types"
 import { Info, Check, Zap, BarChart3 } from "lucide-react"
 
 interface StepPricingProps {
   hierarchy: HierarchicalAccount
-  onComplete: (config: PricingConfig) => void
+  accounts: Account[]
+  centralizerAccount: Account
+  onComplete: (config: PricingConfig, pricingAccountId: string) => void
   onBack: () => void
   initialConfig?: PricingConfig
+  initialPricingAccountId?: string
 }
 
 interface PricingCode {
@@ -56,12 +59,18 @@ const PRICING_CODES: PricingCode[] = [
 
 const CURRENT_LOT = "1" // In Lot 1, only Reporting is active
 
-export function StepPricing({ hierarchy, onComplete, onBack, initialConfig }: StepPricingProps) {
+export function StepPricing({ hierarchy, accounts, centralizerAccount, onComplete, onBack, initialConfig, initialPricingAccountId }: StepPricingProps) {
   const [selectedPricingCode, setSelectedPricingCode] = useState<"reporting" | "transactional" | "combined" | null>(
     initialConfig?.pricingCodeType || "reporting"
   )
   const [hasPreferentialRate, setHasPreferentialRate] = useState(initialConfig?.hasPreferentialRate || false)
   const [preferentialRate, setPreferentialRate] = useState(initialConfig?.preferentialRate || 400)
+  const [pricingAccountId, setPricingAccountId] = useState<string>(initialPricingAccountId || centralizerAccount.id)
+
+  // Organiser les comptes: d'abord ceux du client sélectionné, puis les autres
+  const clientAccounts = accounts.filter(a => a.clientId === centralizerAccount.clientId)
+  const otherAccounts = accounts.filter(a => a.clientId !== centralizerAccount.clientId)
+  const organizedAccounts = [...clientAccounts, ...otherAccounts]
 
   const selectedCode = useMemo(
     () => PRICING_CODES.find((code) => code.id === selectedPricingCode),
@@ -95,12 +104,69 @@ export function StepPricing({ hierarchy, onComplete, onBack, initialConfig }: St
       radical: "RAD123", // This would come from the centralizer account
     }
 
-    onComplete(config)
+    onComplete(config, pricingAccountId)
   }
 
   return (
     <div className="space-y-6">
-      {/* Section 1: Code Tarif Selection */}
+      {/* Section 1: Compte de facturation - PREMIER */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Compte de facturation</CardTitle>
+          <CardDescription>Sélectionnez le compte à utiliser pour la facturation</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {/* Comptes du client sélectionné */}
+            {clientAccounts.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                  Comptes du client: {centralizerAccount.clientName}
+                </Label>
+                <select
+                  value={pricingAccountId}
+                  onChange={(e) => setPricingAccountId(e.target.value)}
+                  className="w-full px-3 py-2 border-2 border-blue-300 rounded-md bg-blue-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {clientAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.accountNumber} - {account.iban}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Autres comptes */}
+            {otherAccounts.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-600 flex items-center gap-2">
+                  <span className="inline-block w-2 h-2 bg-slate-400 rounded-full"></span>
+                  Autres comptes
+                </Label>
+                <select
+                  value={pricingAccountId}
+                  onChange={(e) => setPricingAccountId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {otherAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.accountNumber} - {account.iban} ({account.clientName})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <p className="text-xs text-slate-500 pt-2 border-t">
+              Compte sélectionné: <span className="font-semibold text-slate-900">{organizedAccounts.find(a => a.id === pricingAccountId)?.accountNumber || "—"}</span>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section 2: Code Tarif Selection */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Code tarif</CardTitle>
@@ -177,7 +243,7 @@ export function StepPricing({ hierarchy, onComplete, onBack, initialConfig }: St
         </Alert>
       )}
 
-      {/* Section 2: Tarif Préférentiel */}
+      {/* Section 3: Tarif Préférentiel */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Tarif préférentiel</CardTitle>
@@ -253,7 +319,7 @@ export function StepPricing({ hierarchy, onComplete, onBack, initialConfig }: St
         </CardContent>
       </Card>
 
-      {/* Section 3: Récapitulatif Tarifaire */}
+      {/* Section 4: Récapitulatif Tarifaire */}
       <Card className="border-slate-300 bg-gradient-to-br from-slate-50 to-slate-100">
         <CardHeader>
           <CardTitle className="text-lg">Récapitulatif tarifaire</CardTitle>
