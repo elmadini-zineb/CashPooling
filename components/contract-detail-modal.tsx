@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { X, Eye, Edit2, Download } from 'lucide-react'
-import type { CashPoolingContract } from '@/lib/types'
+import type { CashPoolingContract, Amendment } from '@/lib/types'
 import { ContractPreview } from './contract-preview'
 import { AuditTrailModal } from './audit-trail-modal'
 import { getAuditLogsByEntity, getAmendmentsByConvention } from '@/lib/mock-data'
@@ -21,6 +21,8 @@ interface ContractDetailModalProps {
 
 export function ContractDetailModal({ contract, isOpen, onClose, user }: ContractDetailModalProps) {
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
+  const [selectedAmendment, setSelectedAmendment] = useState<Amendment | null>(null)
+  const [isAmendmentDetailOpen, setIsAmendmentDetailOpen] = useState(false)
 
   if (!contract) return null
 
@@ -259,6 +261,10 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                                       size="sm"
                                       className="h-8 w-8 p-0 hover:bg-blue-100"
                                       title="Voir détails"
+                                      onClick={() => {
+                                        setSelectedAmendment(amendment)
+                                        setIsAmendmentDetailOpen(true)
+                                      }}
                                     >
                                       <Eye className="h-4 w-4 text-blue-600" />
                                     </Button>
@@ -379,6 +385,175 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
             isOpen={isAuditModalOpen}
             onClose={() => setIsAuditModalOpen(false)}
           />
+
+          {/* Amendment Detail Modal */}
+          {selectedAmendment && isAmendmentDetailOpen && (
+            <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-auto">
+                {/* Header */}
+                <div className="sticky top-0 bg-white border-b p-6 flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">{selectedAmendment.amendmentNumber}</h2>
+                    <p className="text-slate-600 mt-2">{selectedAmendment.subject}</p>
+                  </div>
+                  <button
+                    onClick={() => setIsAmendmentDetailOpen(false)}
+                    className="h-8 w-8 rounded hover:bg-slate-100 flex items-center justify-center"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 space-y-6">
+                  {/* Informations générales */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Informations générales</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <p className="text-sm text-slate-600 mb-1">Numéro avenant</p>
+                          <p className="text-lg font-semibold">{selectedAmendment.amendmentNumber}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600 mb-1">Convention</p>
+                          <p className="text-lg font-semibold">{selectedAmendment.conventionReference}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600 mb-1">Date effective</p>
+                          <p className="text-lg font-semibold">{new Date(selectedAmendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-slate-600 mb-1">Statut</p>
+                          <Badge variant={
+                            selectedAmendment.status === 'signed' ? 'default' :
+                            selectedAmendment.status === 'pending_signature' ? 'secondary' :
+                            selectedAmendment.status === 'rejected' ? 'destructive' :
+                            'outline'
+                          }>
+                            {selectedAmendment.status === 'signed' && 'Signé'}
+                            {selectedAmendment.status === 'pending_signature' && 'En attente'}
+                            {selectedAmendment.status === 'rejected' && 'Rejeté'}
+                            {selectedAmendment.status === 'draft' && 'Brouillon'}
+                            {selectedAmendment.status === 'active' && 'Actif'}
+                            {selectedAmendment.status === 'generated' && 'Généré'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Motif et description */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Raison de l'avenant</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-slate-700">{selectedAmendment.reason}</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Sections modifiées */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Sections modifiées</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        {selectedAmendment.modifyPricing && (
+                          <Badge variant="outline" className="w-fit">Tarification</Badge>
+                        )}
+                        {selectedAmendment.modifyLeveling && (
+                          <Badge variant="outline" className="w-fit">Nivellement</Badge>
+                        )}
+                        {selectedAmendment.modifyDebitCoverage && (
+                          <Badge variant="outline" className="w-fit">Couverture débitrice</Badge>
+                        )}
+                        {selectedAmendment.modifySecondaryAccounts && (
+                          <Badge variant="outline" className="w-fit">Comptes secondaires</Badge>
+                        )}
+                        {selectedAmendment.modifyIntermediateAccounts && (
+                          <Badge variant="outline" className="w-fit">Comptes intermédiaires</Badge>
+                        )}
+                        {selectedAmendment.modifyEndDate && (
+                          <Badge variant="outline" className="w-fit">Date fin</Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Modification de tarification */}
+                  {selectedAmendment.modifyPricing && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Modifications tarification</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <p className="text-sm text-slate-600 mb-2 font-semibold">Avant</p>
+                            <div className="space-y-2 text-sm">
+                              <p><span className="text-slate-600">Type:</span> {selectedAmendment.previousPricingConfig?.pricingCodeType || 'N/A'}</p>
+                              <p><span className="text-slate-600">Tarif préférentiel:</span> {selectedAmendment.previousPricingConfig?.preferentialRate || '—'}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-sm text-slate-600 mb-2 font-semibold">Après</p>
+                            <div className="space-y-2 text-sm">
+                              <p><span className="text-slate-600">Type:</span> {selectedAmendment.newPricingConfig?.pricingCodeType || 'N/A'}</p>
+                              <p><span className="text-slate-600">Tarif préférentiel:</span> {selectedAmendment.newPricingConfig?.preferentialRate || '—'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Modifications de nivellement */}
+                  {selectedAmendment.modifyLeveling && selectedAmendment.levelingChanges && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Modifications nivellement</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {Object.entries(selectedAmendment.levelingChanges).map(([city, changes]: any) => (
+                            changes && (
+                              <div key={city} className="p-3 bg-slate-50 rounded">
+                                <p className="font-semibold text-slate-900 mb-2 capitalize">{city}</p>
+                                <div className="text-sm space-y-1">
+                                  <p><span className="text-slate-600">Mode ancien:</span> {changes.oldMode}</p>
+                                  <p><span className="text-slate-600">Mode nouveau:</span> {changes.newMode}</p>
+                                </div>
+                              </div>
+                            )
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="sticky bottom-0 bg-slate-50 border-t p-6 flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAmendmentDetailOpen(false)}
+                  >
+                    Fermer
+                  </Button>
+                  <Button
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Télécharger l'avenant
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>
