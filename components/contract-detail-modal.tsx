@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { X } from 'lucide-react'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { X, Eye, Edit2, Download } from 'lucide-react'
 import type { CashPoolingContract } from '@/lib/types'
 import { ContractPreview } from './contract-preview'
 import { AuditTrailModal } from './audit-trail-modal'
@@ -94,8 +94,96 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
             </TabsList>
 
             {/* Détails du contrat */}
-            <TabsContent value="details" className="mt-6">
-              <ContractPreview contract={contract} user={user} />
+            <TabsContent value="details" className="mt-6 space-y-6">
+              {/* Section 1: Informations générales */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Informations générales</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Client/Groupe</p>
+                      <p className="text-lg font-semibold">{contract.clientName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Devise</p>
+                      <p className="text-lg font-semibold">{contract.currency}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Statut</p>
+                      <Badge className={`${getStatusColor(contract.status)} text-base px-4 py-2`}>
+                        {getStatusLabel(contract.status)}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Date de création</p>
+                      <p className="text-lg font-semibold">{new Date(contract.createdAt).toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Compte centralisateur</p>
+                      <p className="text-lg font-semibold">{contract.masterAccount?.accountNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Comptes secondaires</p>
+                      <Badge variant="secondary" className="text-base px-3 py-2">
+                        {contract.secondaryAccounts.length}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Section 2: Configuration de tarification */}
+              {contract.pricingConfig && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-xl">Configuration de tarification</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-6">
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">Type de tarification</p>
+                        <p className="text-lg font-semibold capitalize">{contract.pricingConfig.pricingCodeType || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">Fréquence de facturation</p>
+                        <p className="text-lg font-semibold capitalize">{contract.pricingConfig.billingFrequency || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">Tarif préférentiel</p>
+                        <p className="text-lg font-semibold">
+                          {contract.pricingConfig.hasPreferentialRate 
+                            ? `${contract.pricingConfig.preferentialRate} DH` 
+                            : 'Non applicable'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">Frais d'ouverture</p>
+                        <p className="text-lg font-semibold">{contract.pricingConfig.openingFees || 0} DH</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">Abonnement mensuel</p>
+                        <p className="text-lg font-semibold">{contract.pricingConfig.monthlySubscription || 0} DH</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">Frais génération de contrat</p>
+                        <p className="text-lg font-semibold">{contract.pricingConfig.contractGenerationFees || 0} DH</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Section 3: Détails complets du contrat */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-xl">Détails complets</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ContractPreview contract={contract} user={user} />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Historique des avenants */}
@@ -108,70 +196,107 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="space-y-3">
-                    {amendments.map((amendment) => (
-                      <Card key={amendment.id}>
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <CardTitle className="text-base">{amendment.amendmentNumber}</CardTitle>
-                              <CardDescription className="mt-1">{amendment.subject}</CardDescription>
-                            </div>
-                            <Badge variant={amendment.status === 'signed' ? 'default' : 'secondary'}>
-                              {amendment.status === 'signed' && 'Signé'}
-                              {amendment.status === 'pending_signature' && 'En attente de signature'}
-                              {amendment.status === 'rejected' && 'Rejeté'}
-                              {amendment.status === 'draft' && 'Brouillon'}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <p className="text-slate-600">Motif:</p>
-                              <p className="font-medium">{amendment.reason}</p>
-                            </div>
-                            <div>
-                              <p className="text-slate-600">Date effective:</p>
-                              <p className="font-medium">{new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
-                            </div>
-                            {amendment.createdAt && (
-                              <div>
-                                <p className="text-slate-600">Créé le:</p>
-                                <p className="font-medium">{new Date(amendment.createdAt).toLocaleDateString('fr-FR')}</p>
-                              </div>
-                            )}
-                            {amendment.signedAt && (
-                              <div>
-                                <p className="text-slate-600">Signé le:</p>
-                                <p className="font-medium">{new Date(amendment.signedAt).toLocaleDateString('fr-FR')}</p>
-                              </div>
-                            )}
-                          </div>
-                          {amendment.modifyLeveling && (
-                            <div className="mt-3 pt-3 border-t text-xs">
-                              <p className="text-slate-600">Modifications: Nivellement</p>
-                            </div>
-                          )}
-                          {amendment.modifyDebitCoverage && (
-                            <div className="text-xs">
-                              <p className="text-slate-600">Modifications: Couverture débitrice</p>
-                            </div>
-                          )}
-                          {amendment.modifySecondaryAccounts && (
-                            <div className="text-xs">
-                              <p className="text-slate-600">Modifications: Comptes secondaires</p>
-                            </div>
-                          )}
-                          {amendment.modifyIntermediateAccounts && (
-                            <div className="text-xs">
-                              <p className="text-slate-600">Modifications: Comptes intermédiaires</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Historique des avenants</CardTitle>
+                      <CardDescription>
+                        {amendments.length} document(s) triés du plus récent au plus ancien
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-50">
+                            <TableHead>Type/Nom</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Motif</TableHead>
+                            <TableHead>Responsable</TableHead>
+                            <TableHead>Statut</TableHead>
+                            <TableHead className="text-right w-32">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {amendments
+                            .sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime())
+                            .map((amendment) => (
+                              <TableRow key={amendment.id}>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-semibold text-slate-900">{amendment.amendmentNumber}</p>
+                                    <p className="text-xs text-slate-600 mt-1">{amendment.subject}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <p className="text-sm font-medium">{new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
+                                    <p className="text-xs text-slate-500">Effectif</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-sm text-slate-700">
+                                  {amendment.reason}
+                                </TableCell>
+                                <TableCell className="text-sm text-slate-700">
+                                  {amendment.createdBy || 'N/A'}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant={
+                                    amendment.status === 'signed' ? 'default' :
+                                    amendment.status === 'pending_signature' ? 'secondary' :
+                                    amendment.status === 'rejected' ? 'destructive' :
+                                    'outline'
+                                  }>
+                                    {amendment.status === 'signed' && 'Signé'}
+                                    {amendment.status === 'pending_signature' && 'En attente'}
+                                    {amendment.status === 'rejected' && 'Rejeté'}
+                                    {amendment.status === 'draft' && 'Brouillon'}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    {/* Voir détails */}
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 hover:bg-blue-100"
+                                      title="Voir détails"
+                                    >
+                                      <Eye className="h-4 w-4 text-blue-600" />
+                                    </Button>
+
+                                    {/* Modifier */}
+                                    {amendment.status === 'draft' && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 hover:bg-orange-100"
+                                        title="Modifier"
+                                      >
+                                        <Edit2 className="h-4 w-4 text-orange-600" />
+                                      </Button>
+                                    )}
+
+                                    {/* Télécharger */}
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 w-8 p-0 hover:bg-green-100"
+                                      title="Télécharger"
+                                    >
+                                      <Download className="h-4 w-4 text-green-600" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                        </TableBody>
+                      </Table>
+                      <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+                        <p className="text-sm text-blue-900">
+                          <span className="font-semibold">Conservation légale:</span> Tous les documents sont conservés à titre d'audit et ne peuvent pas être supprimés.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </TabsContent>
