@@ -55,29 +55,37 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="fixed inset-0 w-screen h-screen max-w-none max-h-none overflow-auto p-8 rounded-none bg-white z-50">
-          <DialogHeader className="pb-6 border-b mb-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <DialogTitle className="text-4xl font-bold">{contract.contractNumber}</DialogTitle>
-                <p className="text-lg text-slate-500 mt-2">{contract.clientName}</p>
-              </div>
-              <Button variant="ghost" size="lg" onClick={onClose} className="h-10 w-10">
-                <X className="h-6 w-6" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-4 mt-4">
-              <Badge className={`${getStatusColor(contract.status)} text-base px-4 py-2`}>
-                {getStatusLabel(contract.status)}
-              </Badge>
-              <span className="text-base text-slate-600">{contract.currency}</span>
-              <span className="text-base text-slate-600">Créé le {new Date(contract.createdAt).toLocaleDateString('fr-FR')}</span>
-            </div>
-          </DialogHeader>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 bg-white overflow-auto">
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="fixed top-6 right-6 z-51 h-10 w-10 rounded-md hover:bg-slate-100 flex items-center justify-center"
+          >
+            <X className="h-6 w-6" />
+          </button>
 
-          {/* Tabs for different views */}
-          <Tabs defaultValue="details" className="mt-8">
+          {/* Main content */}
+          <div className="w-full h-full p-8">
+            {/* Header */}
+            <div className="pb-6 border-b mb-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h1 className="text-4xl font-bold">{contract.contractNumber}</h1>
+                  <p className="text-lg text-slate-500 mt-2">{contract.clientName}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 mt-4">
+                <Badge className={`${getStatusColor(contract.status)} text-base px-4 py-2`}>
+                  {getStatusLabel(contract.status)}
+                </Badge>
+                <span className="text-base text-slate-600">{contract.currency}</span>
+                <span className="text-base text-slate-600">Créé le {new Date(contract.createdAt).toLocaleDateString('fr-FR')}</span>
+              </div>
+            </div>
+
+            {/* Tabs for different views */}
+            <Tabs defaultValue="details" className="mt-8 w-full">
             <TabsList className="grid w-full grid-cols-4 mb-8">
               <TabsTrigger value="details" className="text-base">Détails du contrat</TabsTrigger>
               <TabsTrigger value="amendments" className="text-base">Avenants ({amendments.length})</TabsTrigger>
@@ -236,17 +244,18 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                 </CardContent>
               </Card>
             </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
+            </Tabs>
+          </div>
 
-      {/* Audit Trail Modal */}
-      <AuditTrailModal
-        contractId={contract.id}
-        contractNumber={contract.contractNumber}
-        isOpen={isAuditModalOpen}
-        onClose={() => setIsAuditModalOpen(false)}
-      />
+          {/* Audit Modal */}
+          <AuditTrailModal
+            contractId={contract.id}
+            contractNumber={contract.contractNumber}
+            isOpen={isAuditModalOpen}
+            onClose={() => setIsAuditModalOpen(false)}
+          />
+        </div>
+      )}
     </>
   )
 }
