@@ -150,14 +150,31 @@ export function AmendmentSections({
   })()
 
   // Helper to get all available accounts (intermediate accounts)
-  // Utiliser les mêmes comptes secondaires pour les intermédiaires
-  const allIntermediateAccounts = contract.secondaryAccounts || []
+  // Les comptes intermédiaires sont les comptes avec parentAccountId = masterAccount
+  const allIntermediateAccounts = contract.masterAccount?.linkedAccountIds?.map(id => {
+    // Chercher le compte dans les secondaryAccounts ou le contrat
+    return contract.secondaryAccounts?.find(acc => acc.id === id)
+  }).filter(Boolean) as Account[] || []
 
   // Fonction pour vérifier les comptes secondaires rattachés à un compte intermédiaire
   const getAttachedSecondaryAccounts = (intermediateAccountId: string) => {
-    // À implémenter: retourner les comptes secondaires rattachés
-    // Pour maintenant, on suppose qu'on récupère cette info de la data
-    return []
+    // Récupérer le compte intermédiaire
+    const intermediateAccount = allIntermediateAccounts.find(acc => acc.id === intermediateAccountId)
+    
+    // Les comptes secondaires rattachés sont ceux qui ont ce compte comme parentAccountId
+    if (!intermediateAccount?.linkedAccountIds) {
+      console.log("[v0] No linkedAccountIds for intermediate account:", intermediateAccountId)
+      return []
+    }
+    
+    // Retourner les comptes secondaires qui sont dans linkedAccountIds
+    const attachedAccounts = allSecondaryAccounts.filter(acc => 
+      intermediateAccount.linkedAccountIds?.includes(acc.id)
+    )
+    
+    console.log("[v0] Intermediate account:", intermediateAccountId, "has attached accounts:", attachedAccounts.map(a => a.accountNumber))
+    
+    return attachedAccounts
   }
 
   return (
