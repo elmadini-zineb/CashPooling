@@ -503,41 +503,72 @@ export function AmendmentSections({
           <div className="space-y-4">
             {/* Comptes existants */}
             <div>
-              <p className="text-sm font-semibold text-slate-900 mb-2">Comptes existants</p>
-              <div className="space-y-2">
+              <p className="text-sm font-semibold text-slate-900 mb-3">Comptes existants - Modifier le mode de nivellement</p>
+              <div className="space-y-3">
                 {allSecondaryAccounts.map((account) => (
                   <div
                     key={account.id}
-                    className={`flex items-center gap-3 p-3 border rounded-md ${
+                    className={`p-4 border rounded-md ${
                       accountsToRemove.includes(account.id)
                         ? "bg-red-50 border-red-200 opacity-60"
                         : "bg-white border-slate-200"
                     }`}
                   >
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
-                      <p className="text-xs text-slate-600">{account.iban}</p>
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                        <p className="text-xs text-slate-600">{account.iban}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant={accountsToRemove.includes(account.id) ? "destructive" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          if (accountsToRemove.includes(account.id)) {
+                            onAccountsChange(
+                              accountsToAdd,
+                              accountsToRemove.filter(id => id !== account.id)
+                            )
+                          } else {
+                            onAccountsChange(
+                              accountsToAdd,
+                              [...accountsToRemove, account.id]
+                            )
+                          }
+                        }}
+                      >
+                        {accountsToRemove.includes(account.id) ? "Restaurer" : <Trash2 className="h-4 w-4" />}
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant={accountsToRemove.includes(account.id) ? "destructive" : "outline"}
-                      size="sm"
-                      onClick={() => {
-                        if (accountsToRemove.includes(account.id)) {
-                          onAccountsChange(
-                            accountsToAdd,
-                            accountsToRemove.filter(id => id !== account.id)
-                          )
-                        } else {
-                          onAccountsChange(
-                            accountsToAdd,
-                            [...accountsToRemove, account.id]
-                          )
-                        }
-                      }}
-                    >
-                      {accountsToRemove.includes(account.id) ? "Restaurer" : <Trash2 className="h-4 w-4" />}
-                    </Button>
+
+                    {/* Mode de nivellement pour ce compte */}
+                    {!accountsToRemove.includes(account.id) && (
+                      <div className="space-y-3 pt-3 border-t border-slate-100">
+                        <div>
+                          <label className="text-xs font-medium text-slate-700 mb-1.5 block">
+                            Mode de nivellement
+                          </label>
+                          <select
+                            value={`${account.id}-mode-zba`} // Placeholder, à améliorer avec état réel
+                            onChange={(e) => {
+                              // À implémenter: gestion du changement de mode
+                              console.log('[v0] Mode change for account:', account.id, e.target.value)
+                            }}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value={`${account.id}-mode-zba`}>Mode ZBA (Solde zéro)</option>
+                            <option value={`${account.id}-mode-tba`}>Mode TBA (Solde cible)</option>
+                            <option value={`${account.id}-mode-fba`}>Mode FBA (Fourchette)</option>
+                          </select>
+                        </div>
+
+                        {/* Paramètres du mode - À afficher selon le mode sélectionné */}
+                        <div className="bg-slate-50 p-3 rounded text-xs text-slate-600">
+                          <p>Mode actuel: ZBA</p>
+                          <p className="text-slate-500 mt-1">Solde zéro automatique</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
