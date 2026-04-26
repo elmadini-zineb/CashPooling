@@ -910,8 +910,6 @@ export function AmendmentSections({
                         )}
                       </div>
                     )
-                      </div>
-                    )
                   })
                 ) : (
                   <p className="text-sm text-slate-600 italic">Aucun compte intermédiaire existant</p>
