@@ -153,6 +153,13 @@ export function AmendmentSections({
   // Utiliser les mêmes comptes secondaires pour les intermédiaires
   const allIntermediateAccounts = contract.secondaryAccounts || []
 
+  // Fonction pour vérifier les comptes secondaires rattachés à un compte intermédiaire
+  const getAttachedSecondaryAccounts = (intermediateAccountId: string) => {
+    // À implémenter: retourner les comptes secondaires rattachés
+    // Pour maintenant, on suppose qu'on récupère cette info de la data
+    return []
+  }
+
   return (
     <div className="space-y-4">
       {/* NIVELLEMENT */}
@@ -804,41 +811,72 @@ export function AmendmentSections({
               <p className="text-sm font-semibold text-slate-900 mb-2">Comptes intermédiaires existants</p>
               <div className="space-y-2">
                 {allIntermediateAccounts.length > 0 ? (
-                  allIntermediateAccounts.map((account) => (
-                    <div
-                      key={account.id}
-                      className={`flex items-center gap-3 p-3 border rounded-md ${
-                        intermediateAccountsToRemove.includes(account.id)
-                          ? "bg-red-50 border-red-200 opacity-60"
-                          : "bg-white border-slate-200"
-                      }`}
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
-                        <p className="text-xs text-slate-600">{account.iban}</p>
-                      </div>
-                      <Button
-                        type="button"
-                        variant={intermediateAccountsToRemove.includes(account.id) ? "destructive" : "outline"}
-                        size="sm"
-                        onClick={() => {
-                          if (intermediateAccountsToRemove.includes(account.id)) {
-                            onIntermediateAccountsChange(
-                              intermediateAccountsToAdd,
-                              intermediateAccountsToRemove.filter(id => id !== account.id)
-                            )
-                          } else {
-                            onIntermediateAccountsChange(
-                              intermediateAccountsToAdd,
-                              [...intermediateAccountsToRemove, account.id]
-                            )
-                          }
-                        }}
+                  allIntermediateAccounts.map((account) => {
+                    const attachedSecondaryAccounts = getAttachedSecondaryAccounts(account.id)
+                    const hasAttachedAccounts = attachedSecondaryAccounts.length > 0
+                    const isMarkedForRemoval = intermediateAccountsToRemove.includes(account.id)
+                    
+                    return (
+                      <div
+                        key={account.id}
+                        className={`p-3 border rounded-md ${
+                          isMarkedForRemoval
+                            ? "bg-red-50 border-red-200 opacity-60"
+                            : hasAttachedAccounts
+                            ? "bg-amber-50 border-amber-200"
+                            : "bg-white border-slate-200"
+                        }`}
                       >
-                        {intermediateAccountsToRemove.includes(account.id) ? "Restaurer" : <Trash2 className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  ))
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                            <p className="text-xs text-slate-600">{account.iban}</p>
+                            
+                            {/* Afficher les comptes secondaires rattachés */}
+                            {hasAttachedAccounts && (
+                              <div className="mt-2 p-2 bg-white rounded border border-amber-200">
+                                <p className="text-xs font-semibold text-amber-900 mb-1">
+                                  {attachedSecondaryAccounts.length} compte(s) secondaire(s) rattaché(s):
+                                </p>
+                                <ul className="text-xs text-amber-800 space-y-0.5">
+                                  {attachedSecondaryAccounts.map((acc) => (
+                                    <li key={acc.id}>• {acc.accountNumber}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <Button
+                            type="button"
+                            variant={isMarkedForRemoval ? "destructive" : hasAttachedAccounts ? "secondary" : "outline"}
+                            size="sm"
+                            disabled={hasAttachedAccounts && !isMarkedForRemoval}
+                            title={
+                              hasAttachedAccounts && !isMarkedForRemoval
+                                ? "Ce compte intermédiaire ne peut pas être supprimé car des comptes secondaires y sont rattachés (RG-A5)"
+                                : ""
+                            }
+                            onClick={() => {
+                              if (isMarkedForRemoval) {
+                                onIntermediateAccountsChange(
+                                  intermediateAccountsToAdd,
+                                  intermediateAccountsToRemove.filter(id => id !== account.id)
+                                )
+                              } else if (!hasAttachedAccounts) {
+                                onIntermediateAccountsChange(
+                                  intermediateAccountsToAdd,
+                                  [...intermediateAccountsToRemove, account.id]
+                                )
+                              }
+                            }}
+                          >
+                            {isMarkedForRemoval ? "Restaurer" : hasAttachedAccounts ? "Bloqué" : <Trash2 className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })
                 ) : (
                   <p className="text-sm text-slate-600 italic">Aucun compte intermédiaire existant</p>
                 )}
