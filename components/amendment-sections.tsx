@@ -132,19 +132,8 @@ export function AmendmentSections({
   ])
 
   // Get all client accounts (excluding master account) - pour les comptes secondaires et intermédiaires
-  const allClientAccounts = contract.linkedAccountIds?.map(id => ({
-    id,
-    accountNumber: `ACC-${id}`,
-    iban: "—",
-    clientId: contract.clientId,
-    clientName: contract.clientName,
-    companyName: contract.clientName,
-    balance: 0,
-    currency: "MAD",
-    status: "active",
-    accountType: "secondary",
-    createdAt: new Date(),
-  } as Account)) || []
+  // Utiliser les comptes secondaires existants du contrat
+  const allClientAccounts = contract.secondaryAccounts || []
 
   // Filter out already selected accounts and the master account
   const availableSecondaryAccounts = allClientAccounts.filter(
@@ -161,13 +150,8 @@ export function AmendmentSections({
   })()
 
   // Helper to get all available accounts (intermediate accounts)
-  const allIntermediateAccounts = contract.linkedAccountIds?.map(id => ({
-    id,
-    accountNumber: `ACC-${id}`,
-    iban: "—",
-    clientName: contract.clientName,
-    balance: 0,
-  } as Account)) || []
+  // Utiliser les mêmes comptes secondaires pour les intermédiaires
+  const allIntermediateAccounts = contract.secondaryAccounts || []
 
   return (
     <div className="space-y-4">
