@@ -836,61 +836,80 @@ export function AmendmentSections({
                     return (
                       <div
                         key={account.id}
-                        className={`p-3 border rounded-md ${
+                        className={`border rounded-md overflow-hidden ${
                           isMarkedForRemoval
-                            ? "bg-red-50 border-red-200 opacity-60"
+                            ? "bg-red-50 border-red-200"
                             : hasAttachedAccounts
-                            ? "bg-amber-50 border-amber-200"
+                            ? "bg-amber-50 border-amber-300"
                             : "bg-white border-slate-200"
                         }`}
                       >
-                        <div className="flex items-start justify-between gap-3">
+                        {/* Header du compte */}
+                        <div className="p-3 flex items-start justify-between gap-3">
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-slate-900">{account.accountNumber}</p>
+                            <p className="text-sm font-semibold text-slate-900">{account.accountNumber}</p>
                             <p className="text-xs text-slate-600">{account.iban}</p>
-                            
-                            {/* Afficher les comptes secondaires rattachés */}
-                            {hasAttachedAccounts && (
-                              <div className="mt-2 p-2 bg-white rounded border border-amber-200">
-                                <p className="text-xs font-semibold text-amber-900 mb-1">
-                                  {attachedSecondaryAccounts.length} compte(s) secondaire(s) rattaché(s):
-                                </p>
-                                <ul className="text-xs text-amber-800 space-y-0.5">
-                                  {attachedSecondaryAccounts.map((acc) => (
-                                    <li key={acc.id}>• {acc.accountNumber}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
                           </div>
                           
-                          <Button
-                            type="button"
-                            variant={isMarkedForRemoval ? "destructive" : hasAttachedAccounts ? "secondary" : "outline"}
-                            size="sm"
-                            disabled={hasAttachedAccounts && !isMarkedForRemoval}
-                            title={
-                              hasAttachedAccounts && !isMarkedForRemoval
-                                ? "Ce compte intermédiaire ne peut pas être supprimé car des comptes secondaires y sont rattachés (RG-A5)"
-                                : ""
-                            }
-                            onClick={() => {
-                              if (isMarkedForRemoval) {
-                                onIntermediateAccountsChange(
-                                  intermediateAccountsToAdd,
-                                  intermediateAccountsToRemove.filter(id => id !== account.id)
-                                )
-                              } else if (!hasAttachedAccounts) {
-                                onIntermediateAccountsChange(
-                                  intermediateAccountsToAdd,
-                                  [...intermediateAccountsToRemove, account.id]
-                                )
-                              }
-                            }}
-                          >
-                            {isMarkedForRemoval ? "Restaurer" : hasAttachedAccounts ? "Bloqué" : <Trash2 className="h-4 w-4" />}
-                          </Button>
+                          {/* Bouton d'action */}
+                          {!hasAttachedAccounts && (
+                            <Button
+                              type="button"
+                              variant={isMarkedForRemoval ? "destructive" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                if (isMarkedForRemoval) {
+                                  onIntermediateAccountsChange(
+                                    intermediateAccountsToAdd,
+                                    intermediateAccountsToRemove.filter(id => id !== account.id)
+                                  )
+                                } else {
+                                  onIntermediateAccountsChange(
+                                    intermediateAccountsToAdd,
+                                    [...intermediateAccountsToRemove, account.id]
+                                  )
+                                }
+                              }}
+                            >
+                              {isMarkedForRemoval ? "Restaurer" : <Trash2 className="h-4 w-4" />}
+                            </Button>
+                          )}
                         </div>
+
+                        {/* Alerte RG-A5 - Comptes attachés */}
+                        {hasAttachedAccounts && (
+                          <div className="bg-amber-100 border-t border-amber-300 p-3">
+                            <div className="flex items-start gap-2">
+                              <div className="flex-1">
+                                <p className="text-sm font-semibold text-amber-900 mb-2">
+                                  ⚠️ Suppression bloquée - Règle RG-A5
+                                </p>
+                                <p className="text-xs text-amber-800 mb-2">
+                                  Ce compte intermédiaire ne peut pas être supprimé car {attachedSecondaryAccounts.length} compte(s) secondaire(s) y est/sont rattaché(s).
+                                </p>
+                                
+                                {/* Liste des comptes attachés */}
+                                <div className="bg-white rounded p-2 mb-2 border border-amber-200">
+                                  <p className="text-xs font-semibold text-amber-900 mb-1">Comptes rattachés:</p>
+                                  <ul className="text-xs text-amber-800 space-y-1">
+                                    {attachedSecondaryAccounts.map((acc) => (
+                                      <li key={acc.id} className="flex items-center gap-2">
+                                        <span className="inline-block w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
+                                        {acc.accountNumber}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                
+                                <p className="text-xs text-amber-800 italic">
+                                  Action requise: Détracter les comptes secondaires de ce compte intermédiaire avant de le supprimer.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
                       </div>
                     )
                   })
