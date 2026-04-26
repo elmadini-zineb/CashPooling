@@ -124,18 +124,18 @@ export function AmendmentSections({
 
   // Helper to get all available accounts (secondary accounts)
   const allSecondaryAccounts = contract.secondaryAccounts || []
-  const selectedSecondaryAccountIds = new Set([
-    ...allSecondaryAccounts
-      .filter(a => !accountsToRemove.includes(a.id)) // Exclure les comptes marqués pour suppression
-      .map(a => a.id),
-    ...accountsToAdd.map(a => a.id),
-  ])
+  
+  // Comptes sélectionnés = seulement les comptes NOUVELLEMENT AJOUTÉS (pas les comptes existants)
+  const selectedSecondaryAccountIds = new Set(
+    accountsToAdd.map(a => a.id)
+  )
 
   // Get all client accounts (excluding master account) - pour les comptes secondaires et intermédiaires
   // Utiliser les comptes secondaires existants du contrat
   const allClientAccounts = contract.secondaryAccounts || []
 
-  // Filter out already selected accounts and the master account
+  // Filter out only newly added accounts and the master account
+  // Les comptes existants restent disponibles pour configuration de nivellement
   const availableSecondaryAccounts = allClientAccounts.filter(
     acc => !selectedSecondaryAccountIds.has(acc.id) && acc.id !== contract.masterAccount?.id
   )
