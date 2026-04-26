@@ -130,6 +130,26 @@ export function AmendmentSections({
     ...accountsToRemove,
   ])
 
+  // Get all client accounts (excluding master account) - pour les comptes secondaires et intermédiaires
+  const allClientAccounts = contract.linkedAccountIds?.map(id => ({
+    id,
+    accountNumber: `ACC-${id}`,
+    iban: "—",
+    clientId: contract.clientId,
+    clientName: contract.clientName,
+    companyName: contract.clientName,
+    balance: 0,
+    currency: "MAD",
+    status: "active",
+    accountType: "secondary",
+    createdAt: new Date(),
+  } as Account)) || []
+
+  // Filter out already selected accounts and the master account
+  const availableSecondaryAccounts = allClientAccounts.filter(
+    acc => !selectedSecondaryAccountIds.has(acc.id) && acc.id !== contract.masterAccount?.id
+  )
+
   // Validation for secondary accounts
   const secondaryAccountsError = (() => {
     const totalAccounts = allSecondaryAccounts.filter(a => !accountsToRemove.includes(a.id)).length + accountsToAdd.length
@@ -533,21 +553,88 @@ export function AmendmentSections({
               {/* Form d'ajout */}
               <div className="space-y-4 bg-slate-50 p-4 rounded-md mb-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <Input
-                    placeholder="Numéro de compte ou IBAN"
-                    value={newSecondaryAccount}
-                    onChange={(e) => setNewSecondaryAccount(e.target.value)}
-                  />
-                  <select
-                    value={newAccountLevelingMode}
-                    onChange={(e) => setNewAccountLevelingMode(e.target.value)}
-                    className="px-3 py-2 border border-slate-300 rounded-md bg-white"
-                  >
-                    <option value="ZBA">Mode ZBA</option>
-                    <option value="TBA">Mode TBA</option>
-                    <option value="FBA">Mode FBA</option>
-                  </select>
+                  {/* Sélection du compte secondaire */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                      Compte secondaire <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={newSecondaryAccount}
+                      onChange={(e) => setNewSecondaryAccount(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">-- Sélectionner un compte --</option>
+                      {availableSecondaryAccounts.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.accountNumber} ({account.iban})
+                        </option>
+                      ))}
+                    </select>
+                    {availableSecondaryAccounts.length === 0 && (
+                      <p className="text-xs text-amber-600 mt-1.5">Aucun compte disponible. Tous les comptes du client sont déjà sélectionnés.</p>
+                    )}
+                  </div>
+
+                  {/* Mode de nivellement */}
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                      Mode de nivellement
+                    </label>
+                    <select
+                      value={newAccountLevelingMode}
+                      onChange={(e) => setNewAccountLevelingMode(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="ZBA">Mode ZBA (Solde zéro)</option>
+                      <option value="TBA">Mode TBA (Solde cible)</option>
+                      <option value="FBA">Mode FBA (Fourchette)</option>
+                    </select>
+                  </div>
                 </div>
+
+                {/* Paramètres selon le mode de nivellement */}
+                {newAccountLevelingMode === "TBA" && (
+                  <div>
+                    <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                      Montant cible (TBA) <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="Ex: 500000"
+                      value={newAccountDebitMinAmount}
+                      onChange={(e) => setNewAccountDebitMinAmount(e.target.value)}
+                      className="text-sm"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Le solde sera ramené à ce montant</p>
+                  </div>
+                )}
+
+                {newAccountLevelingMode === "FBA" && (
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-slate-700 block">
+                      Fourchette (FBA) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-600 mb-1 block">Minimum</label>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 0"
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-600 mb-1 block">Maximum</label>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 1000000"
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500">Le solde sera maintenu entre ces deux montants</p>
+                  </div>
+                )}
 
                 {/* Priorité débitrice */}
                 <div className="space-y-2">
@@ -775,39 +862,45 @@ export function AmendmentSections({
 
             {/* Ajouter des comptes */}
             <div className="border-t pt-4">
-              <p className="text-sm font-semibold text-slate-900 mb-2">Ajouter des comptes intermédiaires</p>
-              <div className="flex gap-2 mb-3">
-                <Input
-                  placeholder="Numéro de compte ou IBAN"
-                  value={newIntermediateAccount}
-                  onChange={(e) => setNewIntermediateAccount(e.target.value)}
-                  className="flex-1"
-                />
+              <p className="text-sm font-semibold text-slate-900 mb-3">Ajouter des comptes intermédiaires</p>
+              <div className="space-y-3 bg-slate-50 p-4 rounded-md mb-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">
+                    Compte intermédiaire <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={newIntermediateAccount}
+                    onChange={(e) => setNewIntermediateAccount(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">-- Sélectionner un compte --</option>
+                    {availableSecondaryAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.accountNumber} ({account.iban})
+                      </option>
+                    ))}
+                  </select>
+                  {availableSecondaryAccounts.length === 0 && (
+                    <p className="text-xs text-amber-600 mt-1.5">Aucun compte disponible. Tous les comptes du client sont déjà sélectionnés.</p>
+                  )}
+                </div>
+
                 <Button
                   type="button"
                   onClick={() => {
                     if (newIntermediateAccount.trim()) {
-                      const newAccount: Account = {
-                        id: `new-intermediate-${Date.now()}`,
-                        accountNumber: newIntermediateAccount,
-                        iban: "—",
-                        clientId: contract.clientId,
-                        clientName: contract.clientName,
-                        companyName: contract.clientName,
-                        balance: 0,
-                        currency: "MAD",
-                        status: "active",
-                        accountType: "intermediate",
-                        createdAt: new Date(),
+                      const selectedAccount = availableSecondaryAccounts.find(a => a.id === newIntermediateAccount)
+                      if (selectedAccount) {
+                        onIntermediateAccountsChange([...intermediateAccountsToAdd, selectedAccount], intermediateAccountsToRemove)
+                        setNewIntermediateAccount("")
                       }
-                      onIntermediateAccountsChange([...intermediateAccountsToAdd, newAccount], intermediateAccountsToRemove)
-                      setNewIntermediateAccount("")
                     }
                   }}
-                  className="gap-2"
+                  disabled={!newIntermediateAccount}
+                  className="w-full gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Ajouter
+                  Ajouter le compte intermédiaire
                 </Button>
               </div>
               {intermediateAccountsToAdd.length > 0 && (
