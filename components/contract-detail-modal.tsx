@@ -661,77 +661,149 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                         </thead>
                         <tbody>
                           {/* Modifications de tarification */}
-                          {selectedAmendment.modifyPricing && (
-                            <tr className="border-b border-slate-300 hover:bg-slate-50">
-                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Tarification</td>
-                              <td className="border-r border-slate-300 p-3">Mode de tarification</td>
-                              <td className="border-r border-slate-300 p-3">
-                                <span className="line-through text-red-600">
-                                  {selectedAmendment.previousPricingConfig?.pricingCodeType || '—'}
-                                </span>
-                              </td>
-                              <td className="p-3">
-                                <span className="text-green-600 font-semibold">
-                                  {selectedAmendment.newPricingConfig?.pricingCodeType || '—'}
-                                </span>
-                              </td>
-                            </tr>
+                          {selectedAmendment.modifyPricing && selectedAmendment.previousPricingConfig && selectedAmendment.newPricingConfig && (
+                            <>
+                              <tr className="border-b border-slate-300 hover:bg-slate-50">
+                                <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Tarification</td>
+                                <td className="border-r border-slate-300 p-3">Type de tarification</td>
+                                <td className="border-r border-slate-300 p-3">
+                                  <span className="line-through text-red-600">
+                                    {selectedAmendment.previousPricingConfig?.pricingCodeType || '—'}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <span className="text-green-600 font-semibold">
+                                    {selectedAmendment.newPricingConfig?.pricingCodeType || '—'}
+                                  </span>
+                                </td>
+                              </tr>
+                              {selectedAmendment.previousPricingConfig?.monthlySubscription !== selectedAmendment.newPricingConfig?.monthlySubscription && (
+                                <tr className="border-b border-slate-300 hover:bg-slate-50">
+                                  <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Tarification</td>
+                                  <td className="border-r border-slate-300 p-3">Abonnement mensuel</td>
+                                  <td className="border-r border-slate-300 p-3">
+                                    <span className="line-through text-red-600">
+                                      {selectedAmendment.previousPricingConfig?.monthlySubscription?.toLocaleString('fr-FR') || '—'}
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="text-green-600 font-semibold">
+                                      {selectedAmendment.newPricingConfig?.monthlySubscription?.toLocaleString('fr-FR') || '—'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              )}
+                            </>
                           )}
 
                           {/* Modifications de nivellement */}
-                          {selectedAmendment.modifyLeveling && (
-                            <tr className="border-b border-slate-300 hover:bg-slate-50">
-                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Nivellement</td>
-                              <td className="border-r border-slate-300 p-3">Mode de nivellement</td>
-                              <td className="border-r border-slate-300 p-3">
-                                <span className="line-through text-red-600">Mode existant</span>
-                              </td>
-                              <td className="p-3">
-                                <span className="text-green-600 font-semibold">Mode modifié</span>
-                              </td>
-                            </tr>
+                          {selectedAmendment.modifyLeveling && selectedAmendment.levelingChanges && (
+                            <>
+                              {Object.entries(selectedAmendment.levelingChanges).map(([city, changes]: any) => 
+                                changes && (
+                                  <tr key={`leveling-${city}`} className="border-b border-slate-300 hover:bg-slate-50">
+                                    <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Nivellement</td>
+                                    <td className="border-r border-slate-300 p-3">Mode - {city}</td>
+                                    <td className="border-r border-slate-300 p-3">
+                                      <span className="line-through text-red-600">{changes.oldMode}</span>
+                                    </td>
+                                    <td className="p-3">
+                                      <span className="text-green-600 font-semibold">{changes.newMode}</span>
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </>
                           )}
 
                           {/* Modifications de couverture débitrice */}
-                          {selectedAmendment.modifyDebitCoverage && (
+                          {selectedAmendment.modifyDebitCoverage && selectedAmendment.debitCoverageChanges && (
                             <tr className="border-b border-slate-300 hover:bg-slate-50">
                               <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Couverture débitrice</td>
-                              <td className="border-r border-slate-300 p-3">Configuration</td>
+                              <td className="border-r border-slate-300 p-3">Mode de couverture</td>
                               <td className="border-r border-slate-300 p-3">
-                                <span className="line-through text-red-600">Configuration actuelle</span>
+                                <span className="line-through text-red-600">{selectedAmendment.debitCoverageChanges.oldMode}</span>
                               </td>
                               <td className="p-3">
-                                <span className="text-green-600 font-semibold">Nouvelle configuration</span>
+                                <span className="text-green-600 font-semibold">{selectedAmendment.debitCoverageChanges.newMode}</span>
                               </td>
                             </tr>
                           )}
 
                           {/* Modifications de comptes secondaires */}
-                          {selectedAmendment.modifySecondaryAccounts && (
-                            <tr className="border-b border-slate-300 hover:bg-slate-50">
-                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes secondaires</td>
-                              <td className="border-r border-slate-300 p-3">Liste des comptes</td>
-                              <td className="border-r border-slate-300 p-3">
-                                <span className="line-through text-red-600 text-xs">Comptes existants</span>
-                              </td>
-                              <td className="p-3">
-                                <span className="text-green-600 font-semibold text-xs">Comptes modifiés</span>
-                              </td>
-                            </tr>
+                          {selectedAmendment.modifySecondaryAccounts && selectedAmendment.accountsChanges && (
+                            <>
+                              {selectedAmendment.accountsChanges.accountsToAdd && selectedAmendment.accountsChanges.accountsToAdd.length > 0 && (
+                                <tr className="border-b border-slate-300 hover:bg-slate-50">
+                                  <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes secondaires</td>
+                                  <td className="border-r border-slate-300 p-3">Comptes à ajouter</td>
+                                  <td className="border-r border-slate-300 p-3">—</td>
+                                  <td className="p-3">
+                                    <div className="space-y-1">
+                                      {selectedAmendment.accountsChanges.accountsToAdd.map(acc => (
+                                        <div key={acc.id} className="text-green-600 font-semibold text-xs">
+                                          {acc.accountNumber}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                              {selectedAmendment.accountsChanges.accountsToRemove && selectedAmendment.accountsChanges.accountsToRemove.length > 0 && (
+                                <tr className="border-b border-slate-300 hover:bg-slate-50">
+                                  <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes secondaires</td>
+                                  <td className="border-r border-slate-300 p-3">Comptes à supprimer</td>
+                                  <td className="border-r border-slate-300 p-3">
+                                    <div className="space-y-1">
+                                      {selectedAmendment.accountsChanges.accountsToRemove.map(id => (
+                                        <div key={id} className="text-red-600 line-through text-xs">
+                                          {id}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-3">—</td>
+                                </tr>
+                              )}
+                            </>
                           )}
 
                           {/* Modifications de comptes intermédiaires */}
-                          {selectedAmendment.modifyIntermediateAccounts && (
-                            <tr className="border-b border-slate-300 hover:bg-slate-50">
-                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes intermédiaires</td>
-                              <td className="border-r border-slate-300 p-3">Configuration</td>
-                              <td className="border-r border-slate-300 p-3">
-                                <span className="line-through text-red-600 text-xs">Configuration actuelle</span>
-                              </td>
-                              <td className="p-3">
-                                <span className="text-green-600 font-semibold text-xs">Nouvelle configuration</span>
-                              </td>
-                            </tr>
+                          {selectedAmendment.modifyIntermediateAccounts && selectedAmendment.intermediateAccountsChanges && (
+                            <>
+                              {selectedAmendment.intermediateAccountsChanges.accountsToAdd && selectedAmendment.intermediateAccountsChanges.accountsToAdd.length > 0 && (
+                                <tr className="border-b border-slate-300 hover:bg-slate-50">
+                                  <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes intermédiaires</td>
+                                  <td className="border-r border-slate-300 p-3">Comptes à ajouter</td>
+                                  <td className="border-r border-slate-300 p-3">—</td>
+                                  <td className="p-3">
+                                    <div className="space-y-1">
+                                      {selectedAmendment.intermediateAccountsChanges.accountsToAdd.map(acc => (
+                                        <div key={acc.id} className="text-green-600 font-semibold text-xs">
+                                          {acc.accountNumber}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                              {selectedAmendment.intermediateAccountsChanges.accountsToRemove && selectedAmendment.intermediateAccountsChanges.accountsToRemove.length > 0 && (
+                                <tr className="border-b border-slate-300 hover:bg-slate-50">
+                                  <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes intermédiaires</td>
+                                  <td className="border-r border-slate-300 p-3">Comptes à supprimer</td>
+                                  <td className="border-r border-slate-300 p-3">
+                                    <div className="space-y-1">
+                                      {selectedAmendment.intermediateAccountsChanges.accountsToRemove.map(id => (
+                                        <div key={id} className="text-red-600 line-through text-xs">
+                                          {id}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-3">—</td>
+                                </tr>
+                              )}
+                            </>
                           )}
 
                           {/* Modifications de date de fin */}
