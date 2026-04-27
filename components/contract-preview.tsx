@@ -324,11 +324,7 @@ export function ContractPreview({ contract, user }: ContractPreviewProps) {
     </div>
   )
 }
-        {/* Header Info */}
-        <div className="grid md:grid-cols-2 gap-6 pb-6 border-b">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Client / Groupe</p>
-            <p className="text-lg font-semibold text-slate-900">{contract.clientName}</p>
+
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Devise du contrat</p>
