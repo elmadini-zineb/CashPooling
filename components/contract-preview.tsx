@@ -325,7 +325,6 @@ export function ContractPreview({ contract, user }: ContractPreviewProps) {
   )
 }
 
-          </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Devise du contrat</p>
             <Badge variant="secondary" className="text-lg px-4 py-1.5">
