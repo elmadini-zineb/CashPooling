@@ -375,7 +375,7 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                               <div className="flex-1">
                                 <p className="font-medium text-sm text-slate-900">{log.action}</p>
                                 <p className="text-xs text-slate-500 mt-1">
-                                  {new Date(log.createdAt).toLocaleDateString('fr-FR')} à {new Date(log.createdAt).toLocaleTimeString('fr-FR')}
+                                  {new Date(log.createdAt).toLocaleDateString('fr-FR')} �� {new Date(log.createdAt).toLocaleTimeString('fr-FR')}
                                 </p>
                                 <p className="text-xs text-slate-600 mt-1">Par: {log.userName || log.userEmail}</p>
                               </div>
@@ -643,113 +643,6 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                     </CardContent>
                   </Card>
                 </div>
-
-                  {/* Motif et description */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Raison de l'avenant</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-slate-700">{selectedAmendment.reason}</p>
-                    </CardContent>
-                  </Card>
-
-                  {/* Sections modifiées */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Sections modifiées</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        {selectedAmendment.modifyPricing && (
-                          <Badge variant="outline" className="w-fit">Tarification</Badge>
-                        )}
-                        {selectedAmendment.modifyLeveling && (
-                          <Badge variant="outline" className="w-fit">Nivellement</Badge>
-                        )}
-                        {selectedAmendment.modifyDebitCoverage && (
-                          <Badge variant="outline" className="w-fit">Couverture débitrice</Badge>
-                        )}
-                        {selectedAmendment.modifySecondaryAccounts && (
-                          <Badge variant="outline" className="w-fit">Comptes secondaires</Badge>
-                        )}
-                        {selectedAmendment.modifyIntermediateAccounts && (
-                          <Badge variant="outline" className="w-fit">Comptes intermédiaires</Badge>
-                        )}
-                        {selectedAmendment.modifyEndDate && (
-                          <Badge variant="outline" className="w-fit">Date fin</Badge>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Modification de tarification */}
-                  {selectedAmendment.modifyPricing && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Modifications tarification</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
-                            <p className="text-sm text-slate-600 mb-2 font-semibold">Avant</p>
-                            <div className="space-y-2 text-sm">
-                              <p><span className="text-slate-600">Type:</span> {selectedAmendment.previousPricingConfig?.pricingCodeType || 'N/A'}</p>
-                              <p><span className="text-slate-600">Tarif préférentiel:</span> {selectedAmendment.previousPricingConfig?.preferentialRate || '—'}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-sm text-slate-600 mb-2 font-semibold">Après</p>
-                            <div className="space-y-2 text-sm">
-                              <p><span className="text-slate-600">Type:</span> {selectedAmendment.newPricingConfig?.pricingCodeType || 'N/A'}</p>
-                              <p><span className="text-slate-600">Tarif préférentiel:</span> {selectedAmendment.newPricingConfig?.preferentialRate || '—'}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Modifications de nivellement */}
-                  {selectedAmendment.modifyLeveling && selectedAmendment.levelingChanges && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Modifications nivellement</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {Object.entries(selectedAmendment.levelingChanges).map(([city, changes]: any) => (
-                            changes && (
-                              <div key={city} className="p-3 bg-slate-50 rounded">
-                                <p className="font-semibold text-slate-900 mb-2 capitalize">{city}</p>
-                                <div className="text-sm space-y-1">
-                                  <p><span className="text-slate-600">Mode ancien:</span> {changes.oldMode}</p>
-                                  <p><span className="text-slate-600">Mode nouveau:</span> {changes.newMode}</p>
-                                </div>
-                              </div>
-                            )
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                {/* Footer */}
-                <div className="sticky bottom-0 bg-slate-50 border-t p-6 flex justify-end gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsAmendmentDetailOpen(false)}
-                  >
-                    Fermer
-                  </Button>
-                  <Button
-                    className="gap-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    Télécharger l'avenant
-                  </Button>
-                </div>
               </div>
             </div>
           )}
@@ -758,3 +651,4 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
     </>
   )
 }
+
