@@ -579,116 +579,121 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
           {/* Amendment Detail Modal */}
           {selectedAmendment && isAmendmentDetailOpen && (
             <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-auto shadow-xl">
-                {/* HEADER - En-tête officiel */}
-                <div className="sticky top-0 bg-white border-b-2 border-slate-900 p-8">
-                  <div className="flex items-start justify-between mb-4">
+              <div className="bg-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-auto shadow-2xl">
+                {/* HEADER - Design amélioré */}
+                <div className="sticky top-0 bg-gradient-to-r from-blue-900 to-blue-700 text-white p-8 shadow-lg">
+                  <div className="flex items-start justify-between mb-6">
                     <div>
-                      <h1 className="text-3xl font-bold text-slate-900">AVENANT À LA CONVENTION DE TRÉSORERIE</h1>
-                      <p className="text-sm text-slate-600 italic mt-2">Document officiel – Non modifiable</p>
+                      <h1 className="text-3xl font-bold">AVENANT À LA CONVENTION DE TRÉSORERIE</h1>
+                      <p className="text-blue-100 text-sm mt-2">Document officiel – Non modifiable</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <Badge className="bg-blue-600 text-white text-base px-4 py-2 font-mono">
-                        {selectedAmendment.amendmentNumber}
-                      </Badge>
+                      <div className="bg-white bg-opacity-20 backdrop-blur px-4 py-2 rounded-lg">
+                        <p className="text-blue-100 text-xs font-medium">Numéro</p>
+                        <p className="text-white font-mono font-bold text-lg">{selectedAmendment.amendmentNumber}</p>
+                      </div>
                       <button
                         onClick={() => setIsAmendmentDetailOpen(false)}
-                        className="h-8 w-8 rounded hover:bg-slate-100 flex items-center justify-center"
+                        className="h-10 w-10 rounded-full hover:bg-white hover:bg-opacity-20 flex items-center justify-center transition"
                       >
-                        <X className="h-5 w-5" />
+                        <X className="h-6 w-6" />
                       </button>
                     </div>
                   </div>
 
-                  {/* Informations générales */}
-                  <div className="grid grid-cols-3 gap-8 text-sm mt-6 pt-4 border-t border-slate-200">
+                  {/* Informations générales en header */}
+                  <div className="grid grid-cols-3 gap-6 text-sm pt-4 border-t border-blue-300 border-opacity-50">
                     <div>
-                      <p className="text-slate-600 font-medium">Référence convention</p>
-                      <p className="font-mono font-semibold text-slate-900">{selectedAmendment.conventionReference}</p>
+                      <p className="text-blue-200">Référence convention</p>
+                      <p className="font-mono font-semibold text-white text-lg">{selectedAmendment.conventionReference}</p>
                     </div>
                     <div>
-                      <p className="text-slate-600 font-medium">Client</p>
-                      <p className="font-semibold text-slate-900">{selectedAmendment.clientName || 'N/A'}</p>
+                      <p className="text-blue-200">Client</p>
+                      <p className="font-semibold text-white">{selectedAmendment.clientName || 'N/A'}</p>
                     </div>
                     <div>
-                      <p className="text-slate-600 font-medium">Date d'effet</p>
-                      <p className="font-semibold text-slate-900">{new Date(selectedAmendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
+                      <p className="text-blue-200">Date d'effet</p>
+                      <p className="font-semibold text-white">{new Date(selectedAmendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* CONTENT */}
-                <div className="p-8 space-y-8">
+                <div className="p-8 space-y-8 bg-gradient-to-b from-slate-50 to-white">
                   {/* Section "Objet et Motif" */}
                   <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-slate-900 border-b-2 border-slate-300 pb-2">
+                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                      <div className="w-1 h-8 bg-blue-600 rounded"></div>
                       OBJET ET MOTIF
                     </h2>
                     
-                    {/* Objet */}
-                    <div>
-                      <label className="text-sm font-semibold text-slate-700 block mb-2">Objet</label>
-                      <div className="p-4 bg-slate-50 border border-slate-300 rounded text-slate-700 min-h-24">
-                        {selectedAmendment.subject || selectedAmendment.reason || 'Non spécifié'}
+                    <div className="grid grid-cols-2 gap-6">
+                      {/* Objet */}
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 block mb-2">Objet</label>
+                        <div className="p-4 bg-white border-2 border-blue-200 rounded-lg text-slate-700 min-h-24 shadow-sm">
+                          {selectedAmendment.subject || selectedAmendment.reason || 'Non spécifié'}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Motif */}
-                    <div>
-                      <label className="text-sm font-semibold text-slate-700 block mb-2">Motif</label>
-                      <div className="p-4 bg-slate-50 border border-slate-300 rounded text-slate-700 min-h-24">
-                        {selectedAmendment.reason || 'Non spécifié'}
+                      {/* Motif */}
+                      <div>
+                        <label className="text-sm font-semibold text-slate-700 block mb-2">Motif</label>
+                        <div className="p-4 bg-white border-2 border-blue-200 rounded-lg text-slate-700 min-h-24 shadow-sm">
+                          {selectedAmendment.reason || 'Non spécifié'}
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Section "Modifications Apportées" */}
                   <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-slate-900 border-b-2 border-slate-300 pb-2">
+                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                      <div className="w-1 h-8 bg-orange-600 rounded"></div>
                       MODIFICATIONS APPORTÉES
                     </h2>
 
                     {/* Tableau des modifications */}
-                    <div className="overflow-x-auto border border-slate-300 rounded">
+                    <div className="overflow-x-auto border-2 border-slate-200 rounded-lg shadow-sm">
                       <table className="w-full text-sm border-collapse">
                         <thead>
-                          <tr className="bg-slate-100 border-b border-slate-300">
-                            <th className="border-r border-slate-300 p-3 text-left font-bold text-slate-900">Section</th>
-                            <th className="border-r border-slate-300 p-3 text-left font-bold text-slate-900">Champ</th>
-                            <th className="border-r border-slate-300 p-3 text-left font-bold text-slate-900">Valeur Actuelle</th>
-                            <th className="p-3 text-left font-bold text-slate-900">Nouvelle Valeur</th>
+                          <tr className="bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300">
+                            <th className="border-r border-slate-300 p-4 text-left font-bold text-slate-900">Section</th>
+                            <th className="border-r border-slate-300 p-4 text-left font-bold text-slate-900">Champ</th>
+                            <th className="border-r border-slate-300 p-4 text-left font-bold text-red-700">Valeur Actuelle</th>
+                            <th className="p-4 text-left font-bold text-green-700">Nouvelle Valeur</th>
                           </tr>
                         </thead>
                         <tbody>
                           {/* Modifications de tarification */}
                           {selectedAmendment.modifyPricing && selectedAmendment.previousPricingConfig && selectedAmendment.newPricingConfig && (
                             <>
-                              <tr className="border-b border-slate-300 hover:bg-slate-50">
-                                <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Tarification</td>
-                                <td className="border-r border-slate-300 p-3">Type de tarification</td>
-                                <td className="border-r border-slate-300 p-3">
-                                  <span className="line-through text-red-600">
+                              <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                                <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Tarification</td>
+                                <td className="border-r border-slate-300 p-4 text-slate-700">Type de tarification</td>
+                                <td className="border-r border-slate-300 p-4">
+                                  <span className="line-through text-red-600 font-medium">
                                     {selectedAmendment.previousPricingConfig?.pricingCodeType || '—'}
                                   </span>
                                 </td>
-                                <td className="p-3">
-                                  <span className="text-green-600 font-semibold">
+                                <td className="p-4">
+                                  <span className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded">
                                     {selectedAmendment.newPricingConfig?.pricingCodeType || '—'}
                                   </span>
                                 </td>
                               </tr>
                               {selectedAmendment.previousPricingConfig?.monthlySubscription !== selectedAmendment.newPricingConfig?.monthlySubscription && (
-                                <tr className="border-b border-slate-300 hover:bg-slate-50">
-                                  <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Tarification</td>
-                                  <td className="border-r border-slate-300 p-3">Abonnement mensuel</td>
-                                  <td className="border-r border-slate-300 p-3">
-                                    <span className="line-through text-red-600">
-                                      {selectedAmendment.previousPricingConfig?.monthlySubscription?.toLocaleString('fr-FR') || '—'}
+                                <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                                  <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Tarification</td>
+                                  <td className="border-r border-slate-300 p-4 text-slate-700">Abonnement mensuel</td>
+                                  <td className="border-r border-slate-300 p-4">
+                                    <span className="line-through text-red-600 font-medium">
+                                      {selectedAmendment.previousPricingConfig?.monthlySubscription?.toLocaleString('fr-FR') || '—'} €
                                     </span>
                                   </td>
-                                  <td className="p-3">
-                                    <span className="text-green-600 font-semibold">
-                                      {selectedAmendment.newPricingConfig?.monthlySubscription?.toLocaleString('fr-FR') || '—'}
+                                  <td className="p-4">
+                                    <span className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded">
+                                      {selectedAmendment.newPricingConfig?.monthlySubscription?.toLocaleString('fr-FR') || '—'} €
                                     </span>
                                   </td>
                                 </tr>
@@ -696,19 +701,39 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                             </>
                           )}
 
-                          {/* Modifications de nivellement */}
+                          {/* Modifications de nivellement - AMÉLIORÉ */}
                           {selectedAmendment.modifyLeveling && selectedAmendment.levelingChanges && (
                             <>
                               {Object.entries(selectedAmendment.levelingChanges).map(([city, changes]: any) => 
                                 changes && (
-                                  <tr key={`leveling-${city}`} className="border-b border-slate-300 hover:bg-slate-50">
-                                    <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Nivellement</td>
-                                    <td className="border-r border-slate-300 p-3">Mode - {city}</td>
-                                    <td className="border-r border-slate-300 p-3">
-                                      <span className="line-through text-red-600">{changes.oldMode}</span>
+                                  <tr key={`leveling-${city}`} className="border-b border-slate-200 hover:bg-blue-50 transition">
+                                    <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">
+                                      <span className="capitalize">{city}</span> - Nivellement
                                     </td>
-                                    <td className="p-3">
-                                      <span className="text-green-600 font-semibold">{changes.newMode}</span>
+                                    <td className="border-r border-slate-300 p-4 text-slate-700">Mode</td>
+                                    <td className="border-r border-slate-300 p-4">
+                                      <div className="space-y-1">
+                                        <div className="line-through text-red-600 font-medium">{changes.oldMode}</div>
+                                        {changes.oldParams && (
+                                          <div className="text-red-500 text-xs mt-1 p-2 bg-red-50 rounded">
+                                            {changes.oldParams.min && <div>Min: {changes.oldParams.min}</div>}
+                                            {changes.oldParams.max && <div>Max: {changes.oldParams.max}</div>}
+                                            {changes.oldParams.threshold && <div>Seuil: {changes.oldParams.threshold}</div>}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className="p-4">
+                                      <div className="space-y-1">
+                                        <div className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded inline-block">{changes.newMode}</div>
+                                        {changes.params && (
+                                          <div className="text-green-700 text-xs mt-1 p-2 bg-green-50 rounded">
+                                            {changes.params.min && <div>Min: {changes.params.min}</div>}
+                                            {changes.params.max && <div>Max: {changes.params.max}</div>}
+                                            {changes.params.threshold && <div>Seuil: {changes.params.threshold}</div>}
+                                          </div>
+                                        )}
+                                      </div>
                                     </td>
                                   </tr>
                                 )
@@ -718,30 +743,30 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
 
                           {/* Modifications de couverture débitrice */}
                           {selectedAmendment.modifyDebitCoverage && selectedAmendment.debitCoverageChanges && (
-                            <tr className="border-b border-slate-300 hover:bg-slate-50">
-                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Couverture débitrice</td>
-                              <td className="border-r border-slate-300 p-3">Mode de couverture</td>
-                              <td className="border-r border-slate-300 p-3">
-                                <span className="line-through text-red-600">{selectedAmendment.debitCoverageChanges.oldMode}</span>
+                            <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                              <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Couverture débitrice</td>
+                              <td className="border-r border-slate-300 p-4 text-slate-700">Mode de couverture</td>
+                              <td className="border-r border-slate-300 p-4">
+                                <span className="line-through text-red-600 font-medium">{selectedAmendment.debitCoverageChanges.oldMode}</span>
                               </td>
-                              <td className="p-3">
-                                <span className="text-green-600 font-semibold">{selectedAmendment.debitCoverageChanges.newMode}</span>
+                              <td className="p-4">
+                                <span className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded">{selectedAmendment.debitCoverageChanges.newMode}</span>
                               </td>
                             </tr>
-                          )}
+                          }
 
                           {/* Modifications de comptes secondaires */}
                           {selectedAmendment.modifySecondaryAccounts && selectedAmendment.accountsChanges && (
                             <>
                               {selectedAmendment.accountsChanges.accountsToAdd && selectedAmendment.accountsChanges.accountsToAdd.length > 0 && (
-                                <tr className="border-b border-slate-300 hover:bg-slate-50">
-                                  <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes secondaires</td>
-                                  <td className="border-r border-slate-300 p-3">Comptes à ajouter</td>
-                                  <td className="border-r border-slate-300 p-3">—</td>
-                                  <td className="p-3">
-                                    <div className="space-y-1">
+                                <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                                  <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Comptes secondaires</td>
+                                  <td className="border-r border-slate-300 p-4 text-slate-700">Comptes à ajouter</td>
+                                  <td className="border-r border-slate-300 p-4">—</td>
+                                  <td className="p-4">
+                                    <div className="space-y-1.5">
                                       {selectedAmendment.accountsChanges.accountsToAdd.map(acc => (
-                                        <div key={acc.id} className="text-green-600 font-semibold text-xs">
+                                        <div key={acc.id} className="text-green-600 font-semibold text-xs bg-green-50 px-3 py-1.5 rounded inline-block">
                                           {acc.accountNumber}
                                         </div>
                                       ))}
@@ -749,6 +774,117 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                                   </td>
                                 </tr>
                               )}
+                              {selectedAmendment.accountsChanges.accountsToRemove && selectedAmendment.accountsChanges.accountsToRemove.length > 0 && (
+                                <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                                  <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Comptes secondaires</td>
+                                  <td className="border-r border-slate-300 p-4 text-slate-700">Comptes à supprimer</td>
+                                  <td className="border-r border-slate-300 p-4">
+                                    <div className="space-y-1.5">
+                                      {selectedAmendment.accountsChanges.accountsToRemove.map(id => (
+                                        <div key={id} className="text-red-600 line-through text-xs bg-red-50 px-3 py-1.5 rounded inline-block">
+                                          {id}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-4">—</td>
+                                </tr>
+                              )}
+                            </>
+                          )}
+
+                          {/* Modifications de comptes intermédiaires */}
+                          {selectedAmendment.modifyIntermediateAccounts && selectedAmendment.intermediateAccountsChanges && (
+                            <>
+                              {selectedAmendment.intermediateAccountsChanges.accountsToAdd && selectedAmendment.intermediateAccountsChanges.accountsToAdd.length > 0 && (
+                                <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                                  <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Comptes intermédiaires</td>
+                                  <td className="border-r border-slate-300 p-4 text-slate-700">Comptes à ajouter</td>
+                                  <td className="border-r border-slate-300 p-4">—</td>
+                                  <td className="p-4">
+                                    <div className="space-y-1.5">
+                                      {selectedAmendment.intermediateAccountsChanges.accountsToAdd.map(acc => (
+                                        <div key={acc.id} className="text-green-600 font-semibold text-xs bg-green-50 px-3 py-1.5 rounded inline-block">
+                                          {acc.accountNumber}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                              {selectedAmendment.intermediateAccountsChanges.accountsToRemove && selectedAmendment.intermediateAccountsChanges.accountsToRemove.length > 0 && (
+                                <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                                  <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Comptes intermédiaires</td>
+                                  <td className="border-r border-slate-300 p-4 text-slate-700">Comptes à supprimer</td>
+                                  <td className="border-r border-slate-300 p-4">
+                                    <div className="space-y-1.5">
+                                      {selectedAmendment.intermediateAccountsChanges.accountsToRemove.map(id => (
+                                        <div key={id} className="text-red-600 line-through text-xs bg-red-50 px-3 py-1.5 rounded inline-block">
+                                          {id}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="p-4">—</td>
+                                </tr>
+                              )}
+                            </>
+                          )}
+
+                          {/* Modifications de date de fin */}
+                          {selectedAmendment.modifyEndDate && (
+                            <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                              <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Contrat</td>
+                              <td className="border-r border-slate-300 p-4 text-slate-700">Date de fin</td>
+                              <td className="border-r border-slate-300 p-4">
+                                <span className="line-through text-red-600 font-medium">
+                                  {selectedAmendment.previousEndDate ? new Date(selectedAmendment.previousEndDate).toLocaleDateString('fr-FR') : '—'}
+                                </span>
+                              </td>
+                              <td className="p-4">
+                                <span className="text-green-600 font-bold bg-green-50 px-3 py-1.5 rounded">
+                                  {selectedAmendment.newEndDate ? new Date(selectedAmendment.newEndDate).toLocaleDateString('fr-FR') : '—'}
+                                </span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Message si aucune modification */}
+                          {!selectedAmendment.modifyPricing && 
+                           !selectedAmendment.modifyLeveling && 
+                           !selectedAmendment.modifyDebitCoverage && 
+                           !selectedAmendment.modifySecondaryAccounts && 
+                           !selectedAmendment.modifyIntermediateAccounts && 
+                           !selectedAmendment.modifyEndDate && (
+                            <tr>
+                              <td colSpan={4} className="p-6 text-center text-slate-600 italic">
+                                Aucune modification enregistrée pour cet avenant.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* FOOTER - Design amélioré */}
+                <div className="sticky bottom-0 bg-gradient-to-r from-slate-100 to-slate-50 border-t-2 border-slate-300 p-6 flex justify-end gap-4 shadow-lg">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAmendmentDetailOpen(false)}
+                    className="border-2 border-slate-300 hover:bg-slate-100"
+                  >
+                    Fermer
+                  </Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6">
+                    <Download className="h-4 w-4" />
+                    Télécharger l'avenant
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
                               {selectedAmendment.accountsChanges.accountsToRemove && selectedAmendment.accountsChanges.accountsToRemove.length > 0 && (
                                 <tr className="border-b border-slate-300 hover:bg-slate-50">
                                   <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes secondaires</td>
