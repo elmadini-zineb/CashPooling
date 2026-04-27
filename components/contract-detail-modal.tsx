@@ -596,12 +596,12 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
 
                 {/* Content */}
                 <div className="p-6 space-y-6">
-                  {/* Récapitulatif de l'avenant */}
+                  {/* Récapitulatif de l'avenant - Structure complète */}
                   <Card className="bg-gradient-to-r from-blue-50 to-slate-50 border-blue-200">
                     <CardHeader>
                       <CardTitle className="text-xl text-blue-900">Récapitulatif de l'avenant</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-6">
                         <div>
                           <p className="text-sm text-blue-700 font-semibold mb-2">Numéro avenant</p>
@@ -619,31 +619,8 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                           <p className="text-sm text-blue-700 font-semibold mb-2">Date effective</p>
                           <p className="text-base text-slate-900 font-semibold">{new Date(selectedAmendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Informations générales */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Informations générales</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <p className="text-sm text-slate-600 mb-1">Numéro avenant</p>
-                          <p className="text-lg font-semibold">{selectedAmendment.amendmentNumber}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600 mb-1">Convention</p>
-                          <p className="text-lg font-semibold">{selectedAmendment.conventionReference}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600 mb-1">Date effective</p>
-                          <p className="text-lg font-semibold">{new Date(selectedAmendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-600 mb-1">Statut</p>
+                          <p className="text-sm text-blue-700 font-semibold mb-2">Statut</p>
                           <Badge variant={
                             selectedAmendment.status === 'signed' ? 'default' :
                             selectedAmendment.status === 'pending_signature' ? 'secondary' :
@@ -658,9 +635,14 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                             {selectedAmendment.status === 'generated' && 'Généré'}
                           </Badge>
                         </div>
+                        <div>
+                          <p className="text-sm text-blue-700 font-semibold mb-2">Date de création</p>
+                          <p className="text-base text-slate-900">{new Date(selectedAmendment.createdAt).toLocaleDateString('fr-FR')}</p>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
+                </div>
 
                   {/* Motif et description */}
                   <Card>
