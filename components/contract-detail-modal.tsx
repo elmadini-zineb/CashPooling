@@ -375,7 +375,7 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                               <div className="flex-1">
                                 <p className="font-medium text-sm text-slate-900">{log.action}</p>
                                 <p className="text-xs text-slate-500 mt-1">
-                                  {new Date(log.createdAt).toLocaleDateString('fr-FR')} �� {new Date(log.createdAt).toLocaleTimeString('fr-FR')}
+                                  {new Date(log.createdAt).toLocaleDateString('fr-FR')} ���� {new Date(log.createdAt).toLocaleTimeString('fr-FR')}
                                 </p>
                                 <p className="text-xs text-slate-600 mt-1">Par: {log.userName || log.userEmail}</p>
                               </div>
@@ -579,69 +579,210 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
           {/* Amendment Detail Modal */}
           {selectedAmendment && isAmendmentDetailOpen && (
             <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-auto">
-                {/* Header */}
-                <div className="sticky top-0 bg-white border-b p-6 flex items-start justify-between">
-                  <div>
-                    <h2 className="text-2xl font-bold">{selectedAmendment.amendmentNumber}</h2>
-                    <p className="text-slate-600 mt-2">{selectedAmendment.subject}</p>
+              <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-auto shadow-xl">
+                {/* HEADER - En-tête officiel */}
+                <div className="sticky top-0 bg-white border-b-2 border-slate-900 p-8">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h1 className="text-3xl font-bold text-slate-900">AVENANT À LA CONVENTION DE TRÉSORERIE</h1>
+                      <p className="text-sm text-slate-600 italic mt-2">Document officiel – Non modifiable</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Badge className="bg-blue-600 text-white text-base px-4 py-2 font-mono">
+                        {selectedAmendment.amendmentNumber}
+                      </Badge>
+                      <button
+                        onClick={() => setIsAmendmentDetailOpen(false)}
+                        className="h-8 w-8 rounded hover:bg-slate-100 flex items-center justify-center"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setIsAmendmentDetailOpen(false)}
-                    className="h-8 w-8 rounded hover:bg-slate-100 flex items-center justify-center"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+
+                  {/* Informations générales */}
+                  <div className="grid grid-cols-3 gap-8 text-sm mt-6 pt-4 border-t border-slate-200">
+                    <div>
+                      <p className="text-slate-600 font-medium">Référence convention</p>
+                      <p className="font-mono font-semibold text-slate-900">{selectedAmendment.conventionReference}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600 font-medium">Client</p>
+                      <p className="font-semibold text-slate-900">{selectedAmendment.clientName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600 font-medium">Date d'effet</p>
+                      <p className="font-semibold text-slate-900">{new Date(selectedAmendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-6 space-y-6">
-                  {/* Récapitulatif de l'avenant - Structure complète */}
-                  <Card className="bg-gradient-to-r from-blue-50 to-slate-50 border-blue-200">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-blue-900">Récapitulatif de l'avenant</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <p className="text-sm text-blue-700 font-semibold mb-2">Numéro avenant</p>
-                          <p className="text-lg font-bold text-slate-900">{selectedAmendment.amendmentNumber}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-blue-700 font-semibold mb-2">Convention associée</p>
-                          <p className="text-lg font-bold text-slate-900">{selectedAmendment.conventionReference}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-blue-700 font-semibold mb-2">Motif</p>
-                          <p className="text-base text-slate-700">{selectedAmendment.reason}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-blue-700 font-semibold mb-2">Date effective</p>
-                          <p className="text-base text-slate-900 font-semibold">{new Date(selectedAmendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-blue-700 font-semibold mb-2">Statut</p>
-                          <Badge variant={
-                            selectedAmendment.status === 'signed' ? 'default' :
-                            selectedAmendment.status === 'pending_signature' ? 'secondary' :
-                            selectedAmendment.status === 'rejected' ? 'destructive' :
-                            'outline'
-                          }>
-                            {selectedAmendment.status === 'signed' && 'Signé'}
-                            {selectedAmendment.status === 'pending_signature' && 'En attente'}
-                            {selectedAmendment.status === 'rejected' && 'Rejeté'}
-                            {selectedAmendment.status === 'draft' && 'Brouillon'}
-                            {selectedAmendment.status === 'active' && 'Actif'}
-                            {selectedAmendment.status === 'generated' && 'Généré'}
-                          </Badge>
-                        </div>
-                        <div>
-                          <p className="text-sm text-blue-700 font-semibold mb-2">Date de création</p>
-                          <p className="text-base text-slate-900">{new Date(selectedAmendment.createdAt).toLocaleDateString('fr-FR')}</p>
-                        </div>
+                {/* CONTENT */}
+                <div className="p-8 space-y-8">
+                  {/* Section "Objet et Motif" */}
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-bold text-slate-900 border-b-2 border-slate-300 pb-2">
+                      OBJET ET MOTIF
+                    </h2>
+                    
+                    {/* Objet */}
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 block mb-2">Objet</label>
+                      <div className="p-4 bg-slate-50 border border-slate-300 rounded text-slate-700 min-h-24">
+                        {selectedAmendment.subject || selectedAmendment.reason || 'Non spécifié'}
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+
+                    {/* Motif */}
+                    <div>
+                      <label className="text-sm font-semibold text-slate-700 block mb-2">Motif</label>
+                      <div className="p-4 bg-slate-50 border border-slate-300 rounded text-slate-700 min-h-24">
+                        {selectedAmendment.reason || 'Non spécifié'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section "Modifications Apportées" */}
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-bold text-slate-900 border-b-2 border-slate-300 pb-2">
+                      MODIFICATIONS APPORTÉES
+                    </h2>
+
+                    {/* Tableau des modifications */}
+                    <div className="overflow-x-auto border border-slate-300 rounded">
+                      <table className="w-full text-sm border-collapse">
+                        <thead>
+                          <tr className="bg-slate-100 border-b border-slate-300">
+                            <th className="border-r border-slate-300 p-3 text-left font-bold text-slate-900">Section</th>
+                            <th className="border-r border-slate-300 p-3 text-left font-bold text-slate-900">Champ</th>
+                            <th className="border-r border-slate-300 p-3 text-left font-bold text-slate-900">Valeur Actuelle</th>
+                            <th className="p-3 text-left font-bold text-slate-900">Nouvelle Valeur</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {/* Modifications de tarification */}
+                          {selectedAmendment.modifyPricing && (
+                            <tr className="border-b border-slate-300 hover:bg-slate-50">
+                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Tarification</td>
+                              <td className="border-r border-slate-300 p-3">Mode de tarification</td>
+                              <td className="border-r border-slate-300 p-3">
+                                <span className="line-through text-red-600">
+                                  {selectedAmendment.previousPricingConfig?.pricingCodeType || '—'}
+                                </span>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-green-600 font-semibold">
+                                  {selectedAmendment.newPricingConfig?.pricingCodeType || '—'}
+                                </span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Modifications de nivellement */}
+                          {selectedAmendment.modifyLeveling && (
+                            <tr className="border-b border-slate-300 hover:bg-slate-50">
+                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Nivellement</td>
+                              <td className="border-r border-slate-300 p-3">Mode de nivellement</td>
+                              <td className="border-r border-slate-300 p-3">
+                                <span className="line-through text-red-600">Mode existant</span>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-green-600 font-semibold">Mode modifié</span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Modifications de couverture débitrice */}
+                          {selectedAmendment.modifyDebitCoverage && (
+                            <tr className="border-b border-slate-300 hover:bg-slate-50">
+                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Couverture débitrice</td>
+                              <td className="border-r border-slate-300 p-3">Configuration</td>
+                              <td className="border-r border-slate-300 p-3">
+                                <span className="line-through text-red-600">Configuration actuelle</span>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-green-600 font-semibold">Nouvelle configuration</span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Modifications de comptes secondaires */}
+                          {selectedAmendment.modifySecondaryAccounts && (
+                            <tr className="border-b border-slate-300 hover:bg-slate-50">
+                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes secondaires</td>
+                              <td className="border-r border-slate-300 p-3">Liste des comptes</td>
+                              <td className="border-r border-slate-300 p-3">
+                                <span className="line-through text-red-600 text-xs">Comptes existants</span>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-green-600 font-semibold text-xs">Comptes modifiés</span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Modifications de comptes intermédiaires */}
+                          {selectedAmendment.modifyIntermediateAccounts && (
+                            <tr className="border-b border-slate-300 hover:bg-slate-50">
+                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Comptes intermédiaires</td>
+                              <td className="border-r border-slate-300 p-3">Configuration</td>
+                              <td className="border-r border-slate-300 p-3">
+                                <span className="line-through text-red-600 text-xs">Configuration actuelle</span>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-green-600 font-semibold text-xs">Nouvelle configuration</span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Modifications de date de fin */}
+                          {selectedAmendment.modifyEndDate && (
+                            <tr className="border-b border-slate-300 hover:bg-slate-50">
+                              <td className="border-r border-slate-300 p-3 font-semibold text-slate-900">Contrat</td>
+                              <td className="border-r border-slate-300 p-3">Date de fin</td>
+                              <td className="border-r border-slate-300 p-3">
+                                <span className="line-through text-red-600">
+                                  {selectedAmendment.previousEndDate ? new Date(selectedAmendment.previousEndDate).toLocaleDateString('fr-FR') : '—'}
+                                </span>
+                              </td>
+                              <td className="p-3">
+                                <span className="text-green-600 font-semibold">
+                                  {selectedAmendment.newEndDate ? new Date(selectedAmendment.newEndDate).toLocaleDateString('fr-FR') : '—'}
+                                </span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Message si aucune modification */}
+                          {!selectedAmendment.modifyPricing && 
+                           !selectedAmendment.modifyLeveling && 
+                           !selectedAmendment.modifyDebitCoverage && 
+                           !selectedAmendment.modifySecondaryAccounts && 
+                           !selectedAmendment.modifyIntermediateAccounts && 
+                           !selectedAmendment.modifyEndDate && (
+                            <tr>
+                              <td colSpan={4} className="p-6 text-center text-slate-600 italic">
+                                Aucune modification enregistrée pour cet avenant.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* FOOTER */}
+                <div className="sticky bottom-0 bg-slate-50 border-t p-6 flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAmendmentDetailOpen(false)}
+                  >
+                    Fermer
+                  </Button>
+                  <Button className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Télécharger l'avenant
+                  </Button>
                 </div>
               </div>
             </div>
