@@ -16,7 +16,7 @@ interface ContractDetailModalProps {
   setIsAmendmentDetailOpen: (value: boolean) => void
 }
 
-export default function ContractDetailModal({
+export function ContractDetailModal({
   contract,
   isOpen,
   onClose,
