@@ -717,6 +717,63 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                                     </div>
                                   </td>
                                 </tr>
+                              )}
+                            </>
+                          )}
+
+                          {/* Modifications de date de fin */}
+                          {selectedAmendment.modifyEndDate && (
+                            <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+                              <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Contrat</td>
+                              <td className="border-r border-slate-300 p-4 text-slate-700">Date de fin</td>
+                              <td className="border-r border-slate-300 p-4">
+                                <span className="line-through text-red-600 font-medium">
+                                  {selectedAmendment.previousEndDate ? new Date(selectedAmendment.previousEndDate).toLocaleDateString('fr-FR') : '—'}
+                                </span>
+                              </td>
+                              <td className="p-4">
+                                <span className="text-green-600 font-bold bg-green-50 px-3 py-1.5 rounded">
+                                  {selectedAmendment.newEndDate ? new Date(selectedAmendment.newEndDate).toLocaleDateString('fr-FR') : '—'}
+                                </span>
+                              </td>
+                            </tr>
+                          )}
+
+                          {/* Message si aucune modification */}
+                          {!selectedAmendment.modifyPricing && 
+                           !selectedAmendment.modifyLeveling && 
+                           !selectedAmendment.modifyDebitCoverage && 
+                           !selectedAmendment.modifySecondaryAccounts && 
+                           !selectedAmendment.modifyIntermediateAccounts && 
+                           !selectedAmendment.modifyEndDate && (
+                            <tr>
+                              <td colSpan={4} className="p-6 text-center text-slate-600 italic">
+                                Aucune modification enregistrée pour cet avenant.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* FOOTER - Design amélioré */}
+                <div className="sticky bottom-0 bg-gradient-to-r from-slate-100 to-slate-50 border-t-2 border-slate-300 p-6 flex justify-end gap-4 shadow-lg">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsAmendmentDetailOpen(false)}
+                    className="border-2 border-slate-300 hover:bg-slate-100"
+                  >
+                    Fermer
+                  </Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6">
+                    <Download className="h-4 w-4" />
+                    Télécharger l'avenant
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -724,19 +781,6 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
   )
 }
 
-                                  <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Comptes intermédiaires</td>
-                                  <td className="border-r border-slate-300 p-4 text-slate-700">Comptes à supprimer</td>
-                                  <td className="border-r border-slate-300 p-4">
-                                    <div className="space-y-1.5">
-                                      {selectedAmendment.intermediateAccountsChanges.accountsToRemove.map(id => (
-                                        <div key={id} className="text-red-600 line-through text-xs bg-red-50 px-3 py-1.5 rounded inline-block">
-                                          {id}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </td>
-                                  <td className="p-4">—</td>
-                                </tr>
                               )}
                             </>
                           )}
