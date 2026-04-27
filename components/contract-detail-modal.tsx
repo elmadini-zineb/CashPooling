@@ -753,7 +753,7 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                                 <span className="text-green-600 font-bold bg-green-50 px-3 py-1 rounded">{selectedAmendment.debitCoverageChanges.newMode}</span>
                               </td>
                             </tr>
-                          }
+                          )}
 
                           {/* Modifications de comptes secondaires */}
                           {selectedAmendment.modifySecondaryAccounts && selectedAmendment.accountsChanges && (
