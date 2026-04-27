@@ -717,9 +717,13 @@ export function ContractDetailModal({ contract, isOpen, onClose, user }: Contrac
                                     </div>
                                   </td>
                                 </tr>
-                              )}
-                              {selectedAmendment.intermediateAccountsChanges.accountsToRemove && selectedAmendment.intermediateAccountsChanges.accountsToRemove.length > 0 && (
-                                <tr className="border-b border-slate-200 hover:bg-blue-50 transition">
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
                                   <td className="border-r border-slate-300 p-4 font-semibold text-slate-900">Comptes intermédiaires</td>
                                   <td className="border-r border-slate-300 p-4 text-slate-700">Comptes à supprimer</td>
                                   <td className="border-r border-slate-300 p-4">
