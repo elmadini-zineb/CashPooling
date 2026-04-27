@@ -81,6 +81,103 @@ export function ContractDetailModal({
                   )}
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tarification</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Type de tarification</p>
+                    <p className="font-semibold">{contract.pricingConfig?.pricingCodeType || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Abonnement mensuel</p>
+                    <p className="font-semibold">{contract.pricingConfig?.monthlySubscription?.toLocaleString('fr-FR') || '—'} €</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Tarif préférentiel</p>
+                    <p className="font-semibold">{contract.pricingConfig?.preferentialRate || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Tarif standard</p>
+                    <p className="font-semibold">{contract.pricingConfig?.standardRate || '—'}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Périodicité</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Type</p>
+                    <p className="font-semibold">
+                      {contract.periodicityType === "daily" && "Quotidienne"}
+                      {contract.periodicityType === "weekly" && "Hebdomadaire"}
+                      {contract.periodicityType === "monthly" && "Mensuelle"}
+                      {contract.periodicityType === "quarterly" && "Trimestrielle"}
+                      {contract.periodicityType === "annual" && "Annuelle"}
+                      {contract.periodicityType === "custom" && "Personnalisée"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Fréquence</p>
+                    <p className="font-semibold">
+                      Tous les {contract.periodicityFrequency} {contract.periodicityUnit === "days" && "jour(s)"}
+                      {contract.periodicityUnit === "weeks" && "semaine(s)"}
+                      {contract.periodicityUnit === "months" && "mois"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Heure d'exécution</p>
+                    <p className="font-semibold">{contract.periodicityExecutionTime || 'Non définie'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Date de fin</p>
+                    <p className="font-semibold">{contract.endDate ? new Date(contract.endDate).toLocaleDateString('fr-FR') : '—'}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Avenants ({contract.amendments?.length || 0})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {contract.amendments && contract.amendments.length > 0 ? (
+                    <div className="space-y-3">
+                      {contract.amendments.map(amendment => (
+                        <div key={amendment.id} className="p-3 bg-slate-50 rounded border border-slate-200 flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="font-mono font-semibold text-slate-900">{amendment.amendmentNumber}</span>
+                              <Badge variant={
+                                amendment.status === 'signed' ? 'default' :
+                                amendment.status === 'pending_signature' ? 'secondary' :
+                                amendment.status === 'rejected' ? 'destructive' :
+                                'outline'
+                              }>
+                                {amendment.status === 'signed' && 'Signé'}
+                                {amendment.status === 'pending_signature' && 'En attente'}
+                                {amendment.status === 'rejected' && 'Rejeté'}
+                                {amendment.status === 'draft' && 'Brouillon'}
+                                {amendment.status === 'active' && 'Actif'}
+                                {amendment.status === 'generated' && 'Généré'}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-slate-600">{amendment.reason}</p>
+                            <p className="text-xs text-slate-500 mt-1">Date d'effet: {new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-slate-600 text-sm italic">Aucun avenant pour ce contrat</p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </DialogContent>
         </Dialog>
