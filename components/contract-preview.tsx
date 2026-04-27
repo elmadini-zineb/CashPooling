@@ -148,6 +148,71 @@ export function ContractPreview({ contract, user }: ContractPreviewProps) {
         </div>
       </div>
 
+      {/* SECTION 4 - PÉRIODICITÉ & ORDRES DE NIVELLEMENT */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-bold text-slate-900 border-b-2 border-slate-300 pb-2">
+          SECTION 4 — PÉRIODICITÉ & ORDRES DE NIVELLEMENT
+        </h2>
+        <div className="grid grid-cols-2 gap-6 text-sm">
+          <div className="p-4 bg-slate-50 border border-slate-300 rounded">
+            <p className="text-slate-600 font-medium mb-2">Type de périodicité</p>
+            <p className="font-semibold text-slate-900">
+              {contract.periodicityType === "daily" && "Quotidienne"}
+              {contract.periodicityType === "weekly" && "Hebdomadaire"}
+              {contract.periodicityType === "monthly" && "Mensuelle"}
+              {contract.periodicityType === "quarterly" && "Trimestrielle"}
+              {contract.periodicityType === "annual" && "Annuelle"}
+              {contract.periodicityType === "custom" && "Personnalisée"}
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 border border-slate-300 rounded">
+            <p className="text-slate-600 font-medium mb-2">Fréquence</p>
+            <p className="font-semibold text-slate-900">
+              Tous les {contract.periodicityFrequency} {contract.periodicityUnit === "days" && "jour(s)"}
+              {contract.periodicityUnit === "weeks" && "semaine(s)"}
+              {contract.periodicityUnit === "months" && "mois"}
+              {contract.periodicityUnit === "quarters" && "trimestre(s)"}
+              {contract.periodicityUnit === "years" && "année(s)"}
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 border border-slate-300 rounded">
+            <p className="text-slate-600 font-medium mb-2">Heure d'exécution</p>
+            <p className="font-semibold text-slate-900">
+              {contract.periodicityExecutionTime || "Non définie"}
+            </p>
+          </div>
+
+          {contract.scheduling?.frequency && (
+            <div className="p-4 bg-slate-50 border border-slate-300 rounded">
+              <p className="text-slate-600 font-medium mb-2">Fréquence de génération</p>
+              <p className="font-semibold text-slate-900">
+                {contract.scheduling.frequency === "daily" && "Quotidienne"}
+                {contract.scheduling.frequency === "weekly" && "Hebdomadaire"}
+                {contract.scheduling.frequency === "monthly" && "Mensuelle"}
+                {contract.scheduling.frequency === "quarterly" && "Trimestrielle"}
+                {contract.scheduling.frequency === "annual" && "Annuelle"}
+              </p>
+            </div>
+          )}
+
+          {contract.scheduling?.startTime && (
+            <div className="p-4 bg-slate-50 border border-slate-300 rounded">
+              <p className="text-slate-600 font-medium mb-2">Heure de début</p>
+              <p className="font-mono font-semibold text-slate-900">{contract.scheduling.startTime}</p>
+            </div>
+          )}
+
+          {contract.scheduling?.endTime && (
+            <div className="p-4 bg-slate-50 border border-slate-300 rounded">
+              <p className="text-slate-600 font-medium mb-2">Heure de fin</p>
+              <p className="font-mono font-semibold text-slate-900">{contract.scheduling.endTime}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* FOOTER */}
       <div className="pt-6 border-t text-xs text-slate-500 text-center">
         <p>Page 1 / 1</p>
