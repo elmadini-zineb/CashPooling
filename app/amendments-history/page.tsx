@@ -17,6 +17,9 @@ export default function AmendmentsHistoryPage() {
   const [showDetail, setShowDetail] = useState(false)
   const [showSignatureModal, setShowSignatureModal] = useState(false)
   const [amendmentToSign, setAmendmentToSign] = useState<Amendment | null>(null)
+  const [showRejectionModal, setShowRejectionModal] = useState(false)
+  const [amendmentToReject, setAmendmentToReject] = useState<Amendment | null>(null)
+  const [rejectionReason, setRejectionReason] = useState("")
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user")
@@ -47,6 +50,24 @@ export default function AmendmentsHistoryPage() {
       setAmendments([...amendments])
       setShowSignatureModal(false)
       setAmendmentToSign(null)
+    }
+  }
+
+  const handleOpenRejectionModal = (amendment: Amendment) => {
+    setAmendmentToReject(amendment)
+    setRejectionReason("")
+    setShowRejectionModal(true)
+  }
+
+  const handleConfirmRejection = () => {
+    if (amendmentToReject) {
+      // Update amendment status to rejected
+      amendmentToReject.status = 'rejected'
+      amendmentToReject.rejectionReason = rejectionReason || "Aucune raison fournie"
+      setAmendments([...amendments])
+      setShowRejectionModal(false)
+      setAmendmentToReject(null)
+      setRejectionReason("")
     }
   }
 
@@ -168,7 +189,11 @@ export default function AmendmentsHistoryPage() {
                             </button>
                           )}
                           {amendment.status !== 'signed' && amendment.status !== 'active' && (
-                            <button className="p-1.5 hover:bg-red-100 rounded transition" title="Rejeter">
+                            <button 
+                              onClick={() => handleOpenRejectionModal(amendment)}
+                              className="p-1.5 hover:bg-red-100 rounded transition" 
+                              title="Rejeter l'avenant"
+                            >
                               <X className="h-4 w-4 text-red-600" />
                             </button>
                           )}
@@ -357,6 +382,77 @@ export default function AmendmentsHistoryPage() {
               >
                 <Check className="h-4 w-4" />
                 Confirmer la signature
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejection Confirmation Modal */}
+      {showRejectionModal && amendmentToReject && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-2xl">
+            <div className="bg-gradient-to-r from-red-900 to-red-700 text-white p-6 flex items-start gap-4">
+              <div className="p-3 bg-red-500 rounded-full">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Confirmer le rejet</h2>
+                <p className="text-red-100 text-sm mt-1">Êtes-vous sûr de vouloir rejeter cet avenant ?</p>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-sm text-slate-600 font-semibold mb-2">Avenant</p>
+                <p className="font-mono font-bold text-lg">{amendmentToReject.amendmentNumber}</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-sm text-slate-600 font-semibold mb-2">Convention</p>
+                <p className="font-mono">{amendmentToReject.conventionReference}</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-sm text-slate-600 font-semibold mb-2">Sujet</p>
+                <p className="text-slate-700">{amendmentToReject.subject}</p>
+              </div>
+
+              <div>
+                <label className="text-sm text-slate-600 font-semibold mb-2 block">Raison du rejet (optionnel)</label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Expliquez pourquoi vous rejetez cet avenant..."
+                  className="w-full p-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  rows={3}
+                />
+              </div>
+
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-900">
+                  <span className="font-semibold">Attention:</span> Cette action marquera l'avenant comme rejeté et ne peut pas être annulée.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border-t p-6 flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowRejectionModal(false)
+                  setAmendmentToReject(null)
+                  setRejectionReason("")
+                }}
+              >
+                Annuler
+              </Button>
+              <Button 
+                className="bg-red-600 hover:bg-red-700 text-white gap-2"
+                onClick={handleConfirmRejection}
+              >
+                <X className="h-4 w-4" />
+                Confirmer le rejet
               </Button>
             </div>
           </div>
