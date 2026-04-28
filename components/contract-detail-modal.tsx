@@ -5,13 +5,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Download, X, ChevronRight } from 'lucide-react'
+import { Download, X, Eye, Check } from 'lucide-react'
 
 interface ContractDetailModalProps {
   contract: Contract | null
   isOpen: boolean
   onClose: () => void
   selectedAmendment: Amendment | null
+  setSelectedAmendment: (amendment: Amendment | null) => void
   isAmendmentDetailOpen: boolean
   setIsAmendmentDetailOpen: (value: boolean) => void
 }
@@ -21,6 +22,7 @@ export function ContractDetailModal({
   isOpen,
   onClose,
   selectedAmendment,
+  setSelectedAmendment,
   isAmendmentDetailOpen,
   setIsAmendmentDetailOpen,
 }: ContractDetailModalProps) {
@@ -143,46 +145,100 @@ export function ContractDetailModal({
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Avenants ({contract.amendments?.length || 0})</CardTitle>
+                  <CardTitle>Historique des avenants</CardTitle>
+                  <p className="text-sm text-slate-600 mt-2">
+                    {contract.amendments?.length || 0} document(s) triés du plus récent au plus ancien
+                  </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   {contract.amendments && contract.amendments.length > 0 ? (
-                    <div className="space-y-3">
-                      {contract.amendments.map(amendment => (
-                        <button
-                          key={amendment.id}
-                          onClick={() => {
-                            setSelectedAmendment(amendment)
-                            setIsAmendmentDetailOpen(true)
-                          }}
-                          className="w-full p-3 bg-slate-50 rounded border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition text-left flex justify-between items-start cursor-pointer"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="font-mono font-semibold text-slate-900">{amendment.amendmentNumber}</span>
-                              <Badge variant={
-                                amendment.status === 'signed' ? 'default' :
-                                amendment.status === 'pending_signature' ? 'secondary' :
-                                amendment.status === 'rejected' ? 'destructive' :
-                                'outline'
-                              }>
-                                {amendment.status === 'signed' && 'Signé'}
-                                {amendment.status === 'pending_signature' && 'En attente'}
-                                {amendment.status === 'rejected' && 'Rejeté'}
-                                {amendment.status === 'draft' && 'Brouillon'}
-                                {amendment.status === 'active' && 'Actif'}
-                                {amendment.status === 'generated' && 'Généré'}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-slate-600">{amendment.reason}</p>
-                            <p className="text-xs text-slate-500 mt-1">Date d'effet: {new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-slate-400 ml-4 flex-shrink-0" />
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      <div className="overflow-x-auto border border-slate-200 rounded-lg">
+                        <table className="w-full text-sm border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                              <th className="p-3 text-left font-semibold text-slate-900">Type/Nom</th>
+                              <th className="p-3 text-left font-semibold text-slate-900">Date</th>
+                              <th className="p-3 text-left font-semibold text-slate-900">Motif</th>
+                              <th className="p-3 text-left font-semibold text-slate-900">Responsable</th>
+                              <th className="p-3 text-left font-semibold text-slate-900">Statut</th>
+                              <th className="p-3 text-left font-semibold text-slate-900">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {contract.amendments.map((amendment) => (
+                              <tr key={amendment.id} className="border-b border-slate-200 hover:bg-slate-50 transition">
+                                <td className="p-3">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedAmendment(amendment)
+                                      setIsAmendmentDetailOpen(true)
+                                    }}
+                                    className="font-mono font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                                  >
+                                    {amendment.amendmentNumber}
+                                  </button>
+                                  <p className="text-xs text-slate-500 mt-1">{amendment.reason}</p>
+                                </td>
+                                <td className="p-3">
+                                  <p className="font-medium">{new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
+                                  <p className="text-xs text-slate-500">Effectif</p>
+                                </td>
+                                <td className="p-3 text-slate-600">{amendment.reason}</td>
+                                <td className="p-3 text-slate-600">{amendment.createdBy || 'N/A'}</td>
+                                <td className="p-3">
+                                  <Badge variant={
+                                    amendment.status === 'signed' ? 'default' :
+                                    amendment.status === 'pending_signature' ? 'secondary' :
+                                    amendment.status === 'rejected' ? 'destructive' :
+                                    'outline'
+                                  }>
+                                    {amendment.status === 'signed' && 'Signé'}
+                                    {amendment.status === 'pending_signature' && 'En attente'}
+                                    {amendment.status === 'rejected' && 'Rejeté'}
+                                    {amendment.status === 'draft' && 'Brouillon'}
+                                    {amendment.status === 'active' && 'Actif'}
+                                    {amendment.status === 'generated' && 'Généré'}
+                                  </Badge>
+                                </td>
+                                <td className="p-3 flex gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedAmendment(amendment)
+                                      setIsAmendmentDetailOpen(true)
+                                    }}
+                                    className="p-1.5 hover:bg-blue-100 rounded transition"
+                                    title="Voir les détails"
+                                  >
+                                    <Eye className="h-4 w-4 text-blue-600" />
+                                  </button>
+                                  {amendment.status === 'pending_signature' && (
+                                    <button className="p-1.5 hover:bg-green-100 rounded transition" title="Approuver">
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    </button>
+                                  )}
+                                  {amendment.status !== 'signed' && (
+                                    <button className="p-1.5 hover:bg-red-100 rounded transition" title="Rejeter">
+                                      <X className="h-4 w-4 text-red-600" />
+                                    </button>
+                                  )}
+                                  <button className="p-1.5 hover:bg-slate-100 rounded transition" title="Télécharger">
+                                    <Download className="h-4 w-4 text-slate-600" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-900">
+                          <span className="font-semibold">Conservation légale:</span> Tous les documents sont conservés à titre d'audit et ne peuvent pas être supprimés.
+                        </p>
+                      </div>
+                    </>
                   ) : (
-                    <p className="text-slate-600 text-sm italic">Aucun avenant pour ce contrat</p>
+                    <p className="text-slate-600 text-sm italic py-4">Aucun avenant pour ce contrat</p>
                   )}
                 </CardContent>
               </Card>
