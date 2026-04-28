@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { UnifiedSubscriptionFlow } from "@/components/unified-subscription-flow"
-import { FileText, FileCheck, AlertCircle, Calculator } from "lucide-react"
+import { FileText, FileCheck, AlertCircle, Calculator, History } from "lucide-react"
 import { getRoleDescription, canAccessPricing } from "@/lib/rbac"
 
 export default function DashboardPage() {
@@ -37,6 +37,10 @@ export default function DashboardPage() {
     router.push("/contracts")
   }
 
+  const handleViewAmendmentsHistory = () => {
+    router.push("/amendments-history")
+  }
+
   const handleViewConventions = () => {
     router.push("/conventions")
   }
@@ -61,6 +65,10 @@ export default function DashboardPage() {
               <Button variant="outline" onClick={() => router.push("/simulation")} className="gap-2 bg-transparent">
                 <Calculator className="h-4 w-4" />
                 Simulation
+              </Button>
+              <Button variant="outline" onClick={handleViewAmendmentsHistory} className="gap-2 bg-transparent">
+                <History className="h-4 w-4" />
+                Historique Avenants
               </Button>
               <Button variant="outline" onClick={handleViewConventions} className="gap-2 bg-transparent">
                 <FileCheck className="h-4 w-4" />
