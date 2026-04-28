@@ -346,7 +346,10 @@ export function addContract(contract: CashPoolingContract): void {
 }
 
 export function getAllContracts(): CashPoolingContract[] {
-  return [...globalContracts]
+  return globalContracts.map((contract) => ({
+    ...contract,
+    amendments: getAmendmentsByConvention(contract.conventionReference)
+  }))
 }
 
 export function updateContractStatus(
@@ -385,7 +388,16 @@ export function updateContractStatus(
 }
 
 export function getContractById(id: string): CashPoolingContract | undefined {
-  return globalContracts.find((c) => c.id === id)
+  const contract = globalContracts.find((c) => c.id === id)
+  if (contract) {
+    // Load amendments for this contract
+    const amendments = getAmendmentsByConvention(contract.conventionReference)
+    return {
+      ...contract,
+      amendments: amendments
+    }
+  }
+  return undefined
 }
 
 export const mockSecondaryConfigs: SecondaryAccountConfig[] = [
