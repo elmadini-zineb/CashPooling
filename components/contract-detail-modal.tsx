@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Download, X } from 'lucide-react'
+import { Download, X, ChevronRight } from 'lucide-react'
 
 interface ContractDetailModalProps {
   contract: Contract | null
@@ -149,7 +149,14 @@ export function ContractDetailModal({
                   {contract.amendments && contract.amendments.length > 0 ? (
                     <div className="space-y-3">
                       {contract.amendments.map(amendment => (
-                        <div key={amendment.id} className="p-3 bg-slate-50 rounded border border-slate-200 flex justify-between items-start">
+                        <button
+                          key={amendment.id}
+                          onClick={() => {
+                            setSelectedAmendment(amendment)
+                            setIsAmendmentDetailOpen(true)
+                          }}
+                          className="w-full p-3 bg-slate-50 rounded border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition text-left flex justify-between items-start cursor-pointer"
+                        >
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <span className="font-mono font-semibold text-slate-900">{amendment.amendmentNumber}</span>
@@ -170,7 +177,8 @@ export function ContractDetailModal({
                             <p className="text-sm text-slate-600">{amendment.reason}</p>
                             <p className="text-xs text-slate-500 mt-1">Date d'effet: {new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
                           </div>
-                        </div>
+                          <ChevronRight className="h-5 w-5 text-slate-400 ml-4 flex-shrink-0" />
+                        </button>
                       ))}
                     </div>
                   ) : (
