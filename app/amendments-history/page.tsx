@@ -60,10 +60,14 @@ export default function AmendmentsHistoryPage() {
   }
 
   const handleConfirmRejection = () => {
+    if (!rejectionReason.trim()) {
+      alert("La raison du rejet est obligatoire")
+      return
+    }
     if (amendmentToReject) {
       // Update amendment status to rejected
       amendmentToReject.status = 'rejected'
-      amendmentToReject.rejectionReason = rejectionReason || "Aucune raison fournie"
+      amendmentToReject.rejectionReason = rejectionReason
       setAmendments([...amendments])
       setShowRejectionModal(false)
       setAmendmentToReject(null)
@@ -419,14 +423,21 @@ export default function AmendmentsHistoryPage() {
               </div>
 
               <div>
-                <label className="text-sm text-slate-600 font-semibold mb-2 block">Raison du rejet (optionnel)</label>
+                <label className="text-sm text-slate-600 font-semibold mb-2 block">Raison du rejet <span className="text-red-600">*</span></label>
                 <textarea
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Expliquez pourquoi vous rejetez cet avenant..."
-                  className="w-full p-3 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className={`w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 ${
+                    rejectionReason.trim() 
+                      ? 'border-slate-300 focus:ring-red-500' 
+                      : 'border-red-300 focus:ring-red-500'
+                  }`}
                   rows={3}
                 />
+                {!rejectionReason.trim() && (
+                  <p className="text-xs text-red-600 mt-1">La raison est obligatoire</p>
+                )}
               </div>
 
               <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -448,8 +459,13 @@ export default function AmendmentsHistoryPage() {
                 Annuler
               </Button>
               <Button 
-                className="bg-red-600 hover:bg-red-700 text-white gap-2"
+                className={`text-white gap-2 ${
+                  rejectionReason.trim()
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : 'bg-red-300 cursor-not-allowed'
+                }`}
                 onClick={handleConfirmRejection}
+                disabled={!rejectionReason.trim()}
               >
                 <X className="h-4 w-4" />
                 Confirmer le rejet
