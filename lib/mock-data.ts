@@ -967,8 +967,58 @@ export function initializeSampleData(): void {
 
   // Create sample amendments
   const sampleAmendments: Amendment[] = [
+    // Amendment for contract-1
     {
-      id: "amendment-1",
+      id: "amendment-c1-1",
+      conventionId: "contract-1",
+      conventionReference: "CP-2026-001",
+      amendmentNumber: "AVN-CP2026001-001",
+      subject: "Modification des modes de nivellement",
+      reason: "Ajustement des paramètres de nivellement suite à demande client",
+      effectiveDate: new Date("2026-03-01"),
+      status: "signed",
+      modifyLeveling: true,
+      levelingChanges: {
+        Casablanca: {
+          oldMode: "TBA",
+          newMode: "FBA",
+          oldParams: { min: 0, max: 100000 },
+          params: { min: 10000, max: 150000 }
+        }
+      },
+      createdBy: "adria@admin.com",
+      createdAt: new Date("2026-02-15"),
+    },
+    // Amendment for contract-2
+    {
+      id: "amendment-c2-1",
+      conventionId: "contract-2",
+      conventionReference: "CP-2026-002",
+      amendmentNumber: "AVN-CP2026002-001",
+      subject: "Modification des frais de tarification",
+      reason: "Ajustement suite à réduction de volume",
+      effectiveDate: new Date("2026-02-15"),
+      status: "pending_signature",
+      modifyPricing: true,
+      previousPricingConfig: {
+        type: "fixed",
+        billingFrequency: "monthly",
+        openingFees: 5000,
+        monthlySubscription: 2000,
+        contractGenerationFees: 1500,
+      },
+      newPricingConfig: {
+        type: "fixed",
+        billingFrequency: "monthly",
+        openingFees: 4500,
+        monthlySubscription: 1800,
+        contractGenerationFees: 1500,
+      },
+      createdBy: "adria@admin.com",
+      createdAt: new Date("2026-02-10"),
+    },
+    {
+      id: "amendment-c3-1",
       conventionId: "contract-3",
       conventionReference: "CP-2025-018",
       amendmentNumber: "AVN-CP2025018-001",
@@ -1001,10 +1051,10 @@ export function initializeSampleData(): void {
       createdAt: new Date("2026-03-19"),
     },
     {
-      id: "amendment-2",
+      id: "amendment-c3-2",
       conventionId: "contract-3",
       conventionReference: "CP-2025-018",
-      amendmentNumber: "AVN-CP2025018-000",
+      amendmentNumber: "AVN-CP2025018-002",
       subject: "Modification tarification",
       reason: "Réajustement suite à augmentation du volume",
       effectiveDate: new Date("2026-03-01"),
@@ -1029,11 +1079,8 @@ export function initializeSampleData(): void {
         variableTriggerThreshold: 500000,
         hybridSecondaryAccountFees: 75,
       },
-      pdfUrl: "https://example.com/amendments/AVN-CP2025018-000.pdf",
       createdBy: "adria@admin.com",
-      createdAt: new Date("2026-02-10"),
-      signedAt: new Date("2026-02-12"),
-      signedBy: "client@example.com",
+      createdAt: new Date("2026-02-28"),
     },
   ]
 
