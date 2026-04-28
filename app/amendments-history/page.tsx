@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, Download, Check, X, Home } from "lucide-react"
+import { Eye, Download, Check, X, Home, AlertCircle } from "lucide-react"
 import { getAllAmendments } from "@/lib/mock-data"
 import { Amendment } from "@/lib/types"
 
@@ -15,6 +15,8 @@ export default function AmendmentsHistoryPage() {
   const [user, setUser] = useState<any>(null)
   const [selectedAmendment, setSelectedAmendment] = useState<Amendment | null>(null)
   const [showDetail, setShowDetail] = useState(false)
+  const [showSignatureModal, setShowSignatureModal] = useState(false)
+  const [amendmentToSign, setAmendmentToSign] = useState<Amendment | null>(null)
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user")
@@ -29,6 +31,23 @@ export default function AmendmentsHistoryPage() {
   const handleLogout = () => {
     sessionStorage.removeItem("user")
     router.push("/login")
+  }
+
+  const handleOpenSignatureModal = (amendment: Amendment) => {
+    setAmendmentToSign(amendment)
+    setShowSignatureModal(true)
+  }
+
+  const handleConfirmSignature = () => {
+    if (amendmentToSign) {
+      // Update amendment status to signed
+      amendmentToSign.status = 'signed'
+      amendmentToSign.signedAt = new Date()
+      amendmentToSign.signedBy = user?.email || 'user@example.com'
+      setAmendments([...amendments])
+      setShowSignatureModal(false)
+      setAmendmentToSign(null)
+    }
   }
 
   if (!user) {
@@ -84,7 +103,6 @@ export default function AmendmentsHistoryPage() {
                       <th className="p-3 text-left font-semibold text-slate-900">Type/Nom</th>
                       <th className="p-3 text-left font-semibold text-slate-900">Contrat</th>
                       <th className="p-3 text-left font-semibold text-slate-900">Date</th>
-                      <th className="p-3 text-left font-semibold text-slate-900">Motif</th>
                       <th className="p-3 text-left font-semibold text-slate-900">Responsable</th>
                       <th className="p-3 text-left font-semibold text-slate-900">Statut</th>
                       <th className="p-3 text-left font-semibold text-slate-900">Actions</th>
@@ -112,7 +130,6 @@ export default function AmendmentsHistoryPage() {
                           <p className="font-medium">{new Date(amendment.effectiveDate).toLocaleDateString('fr-FR')}</p>
                           <p className="text-xs text-slate-500">Effectif</p>
                         </td>
-                        <td className="p-3 text-slate-600">{amendment.reason}</td>
                         <td className="p-3 text-slate-600">{amendment.createdBy || 'N/A'}</td>
                         <td className="p-3">
                           <Badge variant={
@@ -142,7 +159,11 @@ export default function AmendmentsHistoryPage() {
                             <Eye className="h-4 w-4 text-blue-600" />
                           </button>
                           {amendment.status === 'pending_signature' && (
-                            <button className="p-1.5 hover:bg-green-100 rounded transition" title="Approuver">
+                            <button 
+                              onClick={() => handleOpenSignatureModal(amendment)}
+                              className="p-1.5 hover:bg-green-100 rounded transition" 
+                              title="Signer l'avenant"
+                            >
                               <Check className="h-4 w-4 text-green-600" />
                             </button>
                           )}
@@ -277,6 +298,65 @@ export default function AmendmentsHistoryPage() {
               <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
                 <Download className="h-4 w-4" />
                 Télécharger
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Signature Confirmation Modal */}
+      {showSignatureModal && amendmentToSign && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-2xl">
+            <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white p-6 flex items-start gap-4">
+              <div className="p-3 bg-blue-500 rounded-full">
+                <AlertCircle className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">Confirmer la signature</h2>
+                <p className="text-blue-100 text-sm mt-1">Êtes-vous sûr de vouloir signer cet avenant ?</p>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-sm text-slate-600 font-semibold mb-2">Avenant</p>
+                <p className="font-mono font-bold text-lg">{amendmentToSign.amendmentNumber}</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-sm text-slate-600 font-semibold mb-2">Convention</p>
+                <p className="font-mono">{amendmentToSign.conventionReference}</p>
+              </div>
+
+              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <p className="text-sm text-slate-600 font-semibold mb-2">Sujet</p>
+                <p className="text-slate-700">{amendmentToSign.subject}</p>
+              </div>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-900">
+                  <span className="font-semibold">Note:</span> Cette action marquera l'avenant comme signé et ne peut pas être annulée.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border-t p-6 flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowSignatureModal(false)
+                  setAmendmentToSign(null)
+                }}
+              >
+                Annuler
+              </Button>
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                onClick={handleConfirmSignature}
+              >
+                <Check className="h-4 w-4" />
+                Confirmer la signature
               </Button>
             </div>
           </div>
