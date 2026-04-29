@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Download, Check, X, Home, AlertCircle, Filter, FileText, File } from "lucide-react"
+import { Eye, Download, AlertCircle, Filter } from "lucide-react"
 import { downloadSimulationCSV, downloadSimulationPDF } from "@/lib/simulation-export"
 import { getAllSimulationHistory } from "@/lib/simulation-history"
 import type { SimulationHistoryEntry } from "@/lib/types"
@@ -262,22 +262,22 @@ export default function SimulationHistoryPage() {
                             <button
                               onClick={(event) => {
                                 event.stopPropagation()
-                                downloadSimulationPDF(entry)
+                                setSelectedEntry(entry)
                               }}
                               className="p-1.5 hover:bg-blue-100 rounded transition"
-                              title="Exporter PDF"
+                              title="Visualiser"
                             >
-                              <FileText className="h-4 w-4 text-blue-600" />
+                              <Eye className="h-4 w-4 text-blue-600" />
                             </button>
                             <button
                               onClick={(event) => {
                                 event.stopPropagation()
-                                downloadSimulationCSV(entry)
+                                downloadSimulationPDF(entry)
                               }}
-                              className="p-1.5 hover:bg-green-100 rounded transition"
-                              title="Exporter CSV"
+                              className="p-1.5 hover:bg-slate-100 rounded transition"
+                              title="Télécharger"
                             >
-                              <File className="h-4 w-4 text-green-600" />
+                              <Download className="h-4 w-4 text-slate-600" />
                             </button>
                           </div>
                         </TableCell>
