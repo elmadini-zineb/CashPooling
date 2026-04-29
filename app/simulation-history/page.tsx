@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Eye, Download, Check, X, Home, AlertCircle, Filter, FileText, File } from "lucide-react"
 import { downloadSimulationCSV, downloadSimulationPDF } from "@/lib/simulation-export"
+import { getAllSimulationHistory } from "@/lib/simulation-history"
 import type { SimulationHistoryEntry } from "@/lib/types"
 
 function formatAmount(value: number) {
