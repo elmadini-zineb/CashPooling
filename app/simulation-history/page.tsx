@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { getAllSimulationHistory } from "@/lib/simulation-history"
+import { Eye, Download, Check, X, Home, AlertCircle, Filter, FileText, File } from "lucide-react"
 import { downloadSimulationCSV, downloadSimulationPDF } from "@/lib/simulation-export"
 import type { SimulationHistoryEntry } from "@/lib/types"
 
@@ -28,6 +28,9 @@ export default function SimulationHistoryPage() {
   const router = useRouter()
   const [entries, setEntries] = useState<SimulationHistoryEntry[]>([])
   const [selectedEntry, setSelectedEntry] = useState<SimulationHistoryEntry | null>(null)
+  const [filterDate, setFilterDate] = useState<string>("")
+  const [filterUser, setFilterUser] = useState<string>("all")
+  const [filterContract, setFilterContract] = useState<string>("all")
 
   const searchParams = useSearchParams()
 
@@ -82,6 +85,46 @@ export default function SimulationHistoryPage() {
     router.push("/contracts")
   }
 
+  // Get unique users
+  const getUniqueUsers = () => {
+    const users = new Set(entries.map((e) => e.user))
+    return Array.from(users).sort()
+  }
+
+  // Get unique contracts
+  const getUniqueContracts = () => {
+    const contracts = new Set(entries.map((e) => e.contractNumber))
+    return Array.from(contracts).sort()
+  }
+
+  // Filter entries
+  const getFilteredEntries = () => {
+    return entries.filter((entry) => {
+      // Date filter
+      if (filterDate) {
+        const filterDateObj = new Date(filterDate)
+        const entryDate = new Date(entry.createdAt)
+        if (filterDateObj.toDateString() !== entryDate.toDateString()) {
+          return false
+        }
+      }
+
+      // User filter
+      if (filterUser !== "all" && entry.user !== filterUser) {
+        return false
+      }
+
+      // Contract filter
+      if (filterContract !== "all" && entry.contractNumber !== filterContract) {
+        return false
+      }
+
+      return true
+    })
+  }
+
+  const filteredEntries = getFilteredEntries()
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white shadow-sm">
@@ -104,77 +147,151 @@ export default function SimulationHistoryPage() {
           <CardHeader>
             <CardTitle>Liste des simulations</CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-50">
-                  <TableHead>Simulation ID</TableHead>
-                  <TableHead>Date / Heure</TableHead>
-                  <TableHead>Utilisateur</TableHead>
-                  <TableHead>Contrat</TableHead>
-                  <TableHead>Paramètres</TableHead>
-                  <TableHead>Résumé</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entries.length > 0 ? (
-                  entries.map((entry) => (
-                    <TableRow
-                      key={entry.id}
-                      onClick={() => setSelectedEntry(entry)}
-                      className="cursor-pointer hover:bg-slate-100"
-                    >
-                      <TableCell>{entry.id}</TableCell>
-                      <TableCell>{new Date(entry.createdAt).toLocaleString("fr-FR")}</TableCell>
-                      <TableCell>{entry.user}</TableCell>
-                      <TableCell>{`${entry.contractNumber} / ${entry.contractName}`}</TableCell>
-                      <TableCell>
-                        {(entry.parameters?.mode ?? "ZBA") as string}
-                        {entry.parameters?.targetBalance !== undefined ? ` • target=${entry.parameters.targetBalance}` : ""}
-                        {entry.parameters?.minBalance !== undefined ? ` • min=${entry.parameters.minBalance}` : ""}
-                        {entry.parameters?.maxBalance !== undefined ? ` • max=${entry.parameters.maxBalance}` : ""}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className="capitalize" variant={getSummaryLabel(entry) === "Success" ? "secondary" : getSummaryLabel(entry) === "Partial" ? "default" : "destructive"}>
-                          {getSummaryLabel(entry)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              downloadSimulationPDF(entry)
-                            }}
-                          >
-                            Exporter PDF
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              downloadSimulationCSV(entry)
-                            }}
-                          >
-                            Exporter CSV
-                          </Button>
-                        </div>
+          <CardContent className="space-y-4">
+            {/* Filters */}
+            <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="h-5 w-5 text-slate-600" />
+                <h3 className="font-semibold text-slate-900">Filtres</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Date Filter */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* User Filter */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Utilisateur</label>
+                  <select
+                    value={filterUser}
+                    onChange={(e) => setFilterUser(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Tous les utilisateurs</option>
+                    {getUniqueUsers().map((user) => (
+                      <option key={user} value={user}>
+                        {user}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Contract Filter */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Contrat</label>
+                  <select
+                    value={filterContract}
+                    onChange={(e) => setFilterContract(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Tous les contrats</option>
+                    {getUniqueContracts().map((contract) => (
+                      <option key={contract} value={contract}>
+                        {contract}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Reset Filters Button */}
+              {(filterDate || filterUser !== "all" || filterContract !== "all") && (
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setFilterDate("")
+                      setFilterUser("all")
+                      setFilterContract("all")
+                    }}
+                  >
+                    Réinitialiser les filtres
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Results Info */}
+            <div className="mb-4">
+              <p className="text-sm text-slate-600">
+                <span className="font-semibold">{filteredEntries.length}</span> simulation(s) trouvée(s)
+                {(filterDate || filterUser !== "all" || filterContract !== "all") && (
+                  <span> (sur {entries.length} au total)</span>
+                )}
+              </p>
+            </div>
+
+            <div className="overflow-x-auto border border-slate-200 rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-slate-50">
+                    <TableHead>Date / Heure</TableHead>
+                    <TableHead>Utilisateur</TableHead>
+                    <TableHead>Contrat</TableHead>
+                    <TableHead>Résumé</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEntries.length > 0 ? (
+                    filteredEntries.map((entry) => (
+                      <TableRow
+                        key={entry.id}
+                        onClick={() => setSelectedEntry(entry)}
+                        className="cursor-pointer hover:bg-slate-50 transition"
+                      >
+                        <TableCell className="font-medium">{new Date(entry.createdAt).toLocaleString("fr-FR")}</TableCell>
+                        <TableCell>{entry.user}</TableCell>
+                        <TableCell>{entry.contractNumber}</TableCell>
+                        <TableCell>
+                          <Badge className="capitalize" variant={getSummaryLabel(entry) === "Success" ? "secondary" : getSummaryLabel(entry) === "Partial" ? "default" : "destructive"}>
+                            {getSummaryLabel(entry)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                downloadSimulationPDF(entry)
+                              }}
+                              className="p-1.5 hover:bg-blue-100 rounded transition"
+                              title="Exporter PDF"
+                            >
+                              <FileText className="h-4 w-4 text-blue-600" />
+                            </button>
+                            <button
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                downloadSimulationCSV(entry)
+                              }}
+                              className="p-1.5 hover:bg-green-100 rounded transition"
+                              title="Exporter CSV"
+                            >
+                              <File className="h-4 w-4 text-green-600" />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-slate-500">
+                        Aucune simulation historique disponible.
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-slate-500">
-                      Aucune simulation historique disponible.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
