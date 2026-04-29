@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, Download, Check, X, Home, AlertCircle } from "lucide-react"
+import { Eye, Download, Check, X, Home, AlertCircle, Filter } from "lucide-react"
 import { getAllAmendments } from "@/lib/mock-data"
 import { Amendment } from "@/lib/types"
 
@@ -20,6 +20,10 @@ export default function AmendmentsHistoryPage() {
   const [showRejectionModal, setShowRejectionModal] = useState(false)
   const [amendmentToReject, setAmendmentToReject] = useState<Amendment | null>(null)
   const [rejectionReason, setRejectionReason] = useState("")
+  const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [filterContract, setFilterContract] = useState<string>("all")
+  const [filterDateFrom, setFilterDateFrom] = useState<string>("")
+  const [filterDateTo, setFilterDateTo] = useState<string>("")
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user")
@@ -75,6 +79,43 @@ export default function AmendmentsHistoryPage() {
     }
   }
 
+  // Filter amendments based on criteria
+  const getFilteredAmendments = () => {
+    return amendments.filter((amendment) => {
+      // Status filter
+      if (filterStatus !== "all" && amendment.status !== filterStatus) {
+        return false
+      }
+
+      // Contract filter
+      if (filterContract !== "all" && amendment.conventionReference !== filterContract) {
+        return false
+      }
+
+      // Date range filter
+      const amendmentDate = new Date(amendment.effectiveDate)
+      if (filterDateFrom) {
+        const dateFrom = new Date(filterDateFrom)
+        if (amendmentDate < dateFrom) return false
+      }
+      if (filterDateTo) {
+        const dateTo = new Date(filterDateTo)
+        dateTo.setHours(23, 59, 59, 999)
+        if (amendmentDate > dateTo) return false
+      }
+
+      return true
+    })
+  }
+
+  // Get unique contracts from amendments
+  const getUniqueContracts = () => {
+    const contracts = new Set(amendments.map((a) => a.conventionReference))
+    return Array.from(contracts).sort()
+  }
+
+  const filteredAmendments = getFilteredAmendments()
+
   if (!user) {
     return null
   }
@@ -120,7 +161,100 @@ export default function AmendmentsHistoryPage() {
             </p>
           </CardHeader>
           <CardContent>
-            {amendments.length > 0 ? (
+            {/* Filters */}
+            <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="h-5 w-5 text-slate-600" />
+                <h3 className="font-semibold text-slate-900">Filtres</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Status Filter */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Statut</label>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Tous les statuts</option>
+                    <option value="pending_signature">En attente</option>
+                    <option value="signed">Signé</option>
+                    <option value="rejected">Rejeté</option>
+                    <option value="active">Actif</option>
+                    <option value="draft">Brouillon</option>
+                  </select>
+                </div>
+
+                {/* Contract Filter */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Contrat</label>
+                  <select
+                    value={filterContract}
+                    onChange={(e) => setFilterContract(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Tous les contrats</option>
+                    {getUniqueContracts().map((contract) => (
+                      <option key={contract} value={contract}>
+                        {contract}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Date From Filter */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Date du</label>
+                  <input
+                    type="date"
+                    value={filterDateFrom}
+                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Date To Filter */}
+                <div>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Date au</label>
+                  <input
+                    type="date"
+                    value={filterDateTo}
+                    onChange={(e) => setFilterDateTo(e.target.value)}
+                    className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Reset Filters Button */}
+              {(filterStatus !== "all" || filterContract !== "all" || filterDateFrom || filterDateTo) && (
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setFilterStatus("all")
+                      setFilterContract("all")
+                      setFilterDateFrom("")
+                      setFilterDateTo("")
+                    }}
+                  >
+                    Réinitialiser les filtres
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Results Info */}
+            <div className="mb-4">
+              <p className="text-sm text-slate-600">
+                <span className="font-semibold">{filteredAmendments.length}</span> avenant(s) trouvé(s)
+                {(filterStatus !== "all" || filterContract !== "all" || filterDateFrom || filterDateTo) && (
+                  <span> (sur {amendments.length} au total)</span>
+                )}
+              </p>
+            </div>
+
+            {filteredAmendments.length > 0 ? (
               <div className="overflow-x-auto border border-slate-200 rounded-lg">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -134,7 +268,7 @@ export default function AmendmentsHistoryPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {amendments.map((amendment) => (
+                    {filteredAmendments.map((amendment) => (
                       <tr key={amendment.id} className="border-b border-slate-200 hover:bg-slate-50 transition">
                         <td className="p-3">
                           <button
