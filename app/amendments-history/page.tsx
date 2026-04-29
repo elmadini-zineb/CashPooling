@@ -187,9 +187,7 @@ export default function AmendmentsHistoryPage() {
                     <option value="all">Tous les statuts</option>
                     <option value="pending_signature">En attente</option>
                     <option value="signed">Signé</option>
-                    <option value="rejected">Rejeté</option>
                     <option value="active">Actif</option>
-                    <option value="draft">Brouillon</option>
                   </select>
                 </div>
 
@@ -308,16 +306,12 @@ export default function AmendmentsHistoryPage() {
                           <Badge variant={
                             amendment.status === 'signed' ? 'default' :
                             amendment.status === 'pending_signature' ? 'secondary' :
-                            amendment.status === 'rejected' ? 'destructive' :
                             amendment.status === 'active' ? 'default' :
                             'outline'
                           }>
                             {amendment.status === 'signed' && 'Signé'}
                             {amendment.status === 'pending_signature' && 'En attente'}
-                            {amendment.status === 'rejected' && 'Rejeté'}
-                            {amendment.status === 'draft' && 'Brouillon'}
                             {amendment.status === 'active' && 'Actif'}
-                            {amendment.status === 'generated' && 'Généré'}
                           </Badge>
                         </td>
                         <td className="p-3 flex gap-2">
