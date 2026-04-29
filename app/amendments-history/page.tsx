@@ -22,8 +22,8 @@ export default function AmendmentsHistoryPage() {
   const [rejectionReason, setRejectionReason] = useState("")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [filterContract, setFilterContract] = useState<string>("all")
-  const [filterDateFrom, setFilterDateFrom] = useState<string>("")
-  const [filterDateTo, setFilterDateTo] = useState<string>("")
+  const [filterDate, setFilterDate] = useState<string>("")
+  const [filterResponsible, setFilterResponsible] = useState<string>("all")
 
   useEffect(() => {
     const storedUser = sessionStorage.getItem("user")
@@ -92,16 +92,18 @@ export default function AmendmentsHistoryPage() {
         return false
       }
 
-      // Date range filter
-      const amendmentDate = new Date(amendment.effectiveDate)
-      if (filterDateFrom) {
-        const dateFrom = new Date(filterDateFrom)
-        if (amendmentDate < dateFrom) return false
+      // Date filter (exact date match)
+      if (filterDate) {
+        const filterDateObj = new Date(filterDate)
+        const amendmentDate = new Date(amendment.effectiveDate)
+        if (filterDateObj.toDateString() !== amendmentDate.toDateString()) {
+          return false
+        }
       }
-      if (filterDateTo) {
-        const dateTo = new Date(filterDateTo)
-        dateTo.setHours(23, 59, 59, 999)
-        if (amendmentDate > dateTo) return false
+
+      // Responsible filter
+      if (filterResponsible !== "all" && amendment.createdBy !== filterResponsible) {
+        return false
       }
 
       return true
@@ -112,6 +114,12 @@ export default function AmendmentsHistoryPage() {
   const getUniqueContracts = () => {
     const contracts = new Set(amendments.map((a) => a.conventionReference))
     return Array.from(contracts).sort()
+  }
+
+  // Get unique responsible persons
+  const getUniqueResponsible = () => {
+    const responsible = new Set(amendments.map((a) => a.createdBy).filter(Boolean))
+    return Array.from(responsible).sort()
   }
 
   const filteredAmendments = getFilteredAmendments()
@@ -202,31 +210,37 @@ export default function AmendmentsHistoryPage() {
                   </select>
                 </div>
 
-                {/* Date From Filter */}
+                {/* Date Effective Filter */}
                 <div>
-                  <label className="text-sm font-semibold text-slate-600 block mb-2">Date du</label>
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Date effectif</label>
                   <input
                     type="date"
-                    value={filterDateFrom}
-                    onChange={(e) => setFilterDateFrom(e.target.value)}
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
                     className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                {/* Date To Filter */}
+                {/* Responsible Filter */}
                 <div>
-                  <label className="text-sm font-semibold text-slate-600 block mb-2">Date au</label>
-                  <input
-                    type="date"
-                    value={filterDateTo}
-                    onChange={(e) => setFilterDateTo(e.target.value)}
+                  <label className="text-sm font-semibold text-slate-600 block mb-2">Responsable</label>
+                  <select
+                    value={filterResponsible}
+                    onChange={(e) => setFilterResponsible(e.target.value)}
                     className="w-full p-2 border border-slate-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  >
+                    <option value="all">Tous les responsables</option>
+                    {getUniqueResponsible().map((responsible) => (
+                      <option key={responsible} value={responsible}>
+                        {responsible}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               {/* Reset Filters Button */}
-              {(filterStatus !== "all" || filterContract !== "all" || filterDateFrom || filterDateTo) && (
+              {(filterStatus !== "all" || filterContract !== "all" || filterDate || filterResponsible !== "all") && (
                 <div className="flex justify-end">
                   <Button
                     variant="outline"
@@ -234,8 +248,8 @@ export default function AmendmentsHistoryPage() {
                     onClick={() => {
                       setFilterStatus("all")
                       setFilterContract("all")
-                      setFilterDateFrom("")
-                      setFilterDateTo("")
+                      setFilterDate("")
+                      setFilterResponsible("all")
                     }}
                   >
                     Réinitialiser les filtres
@@ -248,7 +262,7 @@ export default function AmendmentsHistoryPage() {
             <div className="mb-4">
               <p className="text-sm text-slate-600">
                 <span className="font-semibold">{filteredAmendments.length}</span> avenant(s) trouvé(s)
-                {(filterStatus !== "all" || filterContract !== "all" || filterDateFrom || filterDateTo) && (
+                {(filterStatus !== "all" || filterContract !== "all" || filterDate || filterResponsible !== "all") && (
                   <span> (sur {amendments.length} au total)</span>
                 )}
               </p>
